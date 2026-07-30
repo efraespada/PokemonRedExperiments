@@ -11,6 +11,10 @@ from stable_baselines3.common.vec_env import SubprocVecEnv
 from tensorboard_callback import TensorboardCallback
 
 
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parent
+
+
 def make_env(rank, env_conf, seed=0):
     def _init():
         env = PrismGymEnv(env_conf)
@@ -26,21 +30,37 @@ if __name__ == "__main__":
     sess_id = os.getenv("PRISM_SESSION_DIR", "runs_prism")
     sess_path = Path(sess_id)
 
+    init_state = Path(
+        os.getenv(
+            "PRISM_INIT_STATE",
+            REPO_ROOT / "v2/bootstrap_states/map_ready_adam.state",
+        )
+    )
+    if not init_state.is_file():
+        raise FileNotFoundError(
+            f"Playable Prism state not found at {init_state}. "
+            "Generate it with: python prism_bootstrap.py --rom ../PokemonPrism.gbc "
+            "--preset map_ready_adam"
+        )
+
     env_config = {
         "headless": True,
         "save_final_state": False,
         "action_freq": 24,
-        "init_state": "../prism_init.state",
+        "init_state": str(init_state),
         "max_steps": ep_length,
         "print_rewards": True,
         "save_video": False,
         "fast_video": True,
         "session_path": sess_path,
-        "gb_path": "../PokemonPrism.gbc",
+        "gb_path": str(
+            Path(os.getenv("PRISM_ROM", REPO_ROOT / "PokemonPrism.gbc"))
+        ),
         "reward_scale": 1.0,
         "screen_explore_weight": 0.05,
         "coord_explore_weight": 0.10,
         "stuck_penalty_weight": 0.05,
+        "party_count_addr": 0xDCD7,
     }
 
     print(env_config)

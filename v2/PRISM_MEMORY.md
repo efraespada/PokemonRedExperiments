@@ -76,7 +76,13 @@ Checkpoints útiles ya verificados:
 - `intro_text`: confirmación `¿Es correcto?`
 - `name_selection`: lista de nombres prefijados
 - `name_adam`: intro ya continuada con el nombre `Adam`
-- `map_ready_adam`: primer estado confirmado en overworld tras elegir `Adam`
+- `map_ready_adam`: primer estado confirmado en overworld, sin diálogo abierto,
+  tras elegir `Adam`
+
+El entrenamiento usa `bootstrap_states/map_ready_adam.state` por defecto. Esto
+evita gastar episodios en el título y el onboarding. Se puede seleccionar otro
+checkpoint mediante `PRISM_INIT_STATE`; la ROM también se puede seleccionar con
+`PRISM_ROM`.
 
 ## Siguiente objetivo
 

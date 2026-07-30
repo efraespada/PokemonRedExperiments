@@ -7,6 +7,18 @@ from torch.utils.tensorboard import SummaryWriter
 import numpy as np
 from einops import rearrange, reduce
 
+
+def tile_maps(maps, rows=2):
+    rows = min(rows, len(maps))
+    columns = int(np.ceil(len(maps) / rows))
+    padding = columns * rows - len(maps)
+    if padding:
+        maps = np.concatenate(
+            [maps, np.zeros((padding, *maps.shape[1:]), dtype=maps.dtype)]
+        )
+    return rearrange(maps, "(r c) h w -> (r h) (c w)", r=rows, c=columns)
+
+
 def merge_dicts(dicts):
     sum_dict = {}
     count_dict = {}
@@ -59,7 +71,7 @@ class TensorboardCallback(BaseCallback):
             map_sum = reduce(explore_map, "f h w -> h w", "max")
             self.logger.record("trajectory/explore_sum", Image(map_sum, "HW"), exclude=("stdout", "log", "json", "csv"))
 
-            map_row = rearrange(explore_map, "(r f) h w -> (r h) (f w)", r=2)
+            map_row = tile_maps(explore_map)
             self.logger.record("trajectory/explore_map", Image(map_row, "HW"), exclude=("stdout", "log", "json", "csv"))
 
             list_of_flag_dicts = self.training_env.get_attr("current_event_flags_set")
@@ -71,4 +83,3 @@ class TensorboardCallback(BaseCallback):
     def _on_training_end(self):
         if self.writer:
             self.writer.close()
-
