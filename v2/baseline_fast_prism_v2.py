@@ -49,7 +49,7 @@ if __name__ == "__main__":
         "action_freq": 24,
         "init_state": str(init_state),
         "max_steps": ep_length,
-        "print_rewards": True,
+        "print_rewards": os.getenv("PRISM_PRINT_REWARDS", "0") == "1",
         "save_video": False,
         "fast_video": True,
         "session_path": sess_path,
@@ -57,8 +57,12 @@ if __name__ == "__main__":
             Path(os.getenv("PRISM_ROM", REPO_ROOT / "PokemonPrism.gbc"))
         ),
         "reward_scale": 1.0,
-        "screen_explore_weight": 0.05,
-        "coord_explore_weight": 0.10,
+        "screen_explore_weight": float(
+            os.getenv("PRISM_SCREEN_EXPLORE_WEIGHT", "0.005")
+        ),
+        "coord_explore_weight": float(
+            os.getenv("PRISM_COORD_EXPLORE_WEIGHT", "0.50")
+        ),
         "pokedex_seen_weight": 0.25,
         "pokedex_caught_weight": 2.0,
         "level_weight": 0.5,
@@ -98,6 +102,10 @@ if __name__ == "__main__":
     batch_size = int(
         os.getenv("PRISM_BATCH_SIZE", min(512, train_steps_batch * num_cpu))
     )
+    n_epochs = int(os.getenv("PRISM_N_EPOCHS", 4))
+    learning_rate = float(os.getenv("PRISM_LEARNING_RATE", 0.0003))
+    ent_coef = float(os.getenv("PRISM_ENT_COEF", 0.01))
+    seed = int(os.getenv("PRISM_SEED", 0))
 
     if exists(file_name + ".zip"):
         print("\nloading checkpoint")
@@ -114,9 +122,11 @@ if __name__ == "__main__":
             verbose=1,
             n_steps=train_steps_batch,
             batch_size=batch_size,
-            n_epochs=1,
+            n_epochs=n_epochs,
             gamma=0.997,
-            ent_coef=0.01,
+            learning_rate=learning_rate,
+            ent_coef=ent_coef,
+            seed=seed,
             tensorboard_log=sess_path,
         )
 
