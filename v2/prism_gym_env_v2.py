@@ -55,7 +55,7 @@ class PrismGymEnv(Env):
         self.heal_weight = config.get("heal_weight", 0.25)
         self.death_penalty_weight = config.get("death_penalty_weight", 5.0)
         self.opponent_weight = config.get("opponent_weight", 5.0)
-        self.experience_weight = config.get("experience_weight", 0.01)
+        self.experience_weight = config.get("experience_weight", 0.25)
         self.stuck_penalty_weight = config.get("stuck_penalty_weight", 0.05)
         self.stuck_threshold = config.get("stuck_threshold", 600)
         self.instance_id = config.get("instance_id", str(uuid.uuid4())[:8])

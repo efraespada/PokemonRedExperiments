@@ -34,7 +34,7 @@ def build_env_config(args, output_dir):
         "heal_weight": 0.25,
         "death_penalty_weight": 5.0,
         "opponent_weight": 5.0,
-        "experience_weight": 0.01,
+        "experience_weight": 0.25,
         "stuck_penalty_weight": 0.05,
     }
 

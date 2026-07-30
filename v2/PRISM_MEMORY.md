@@ -137,6 +137,9 @@ episodios completos. Una lectura anterior sin banco explícito produjo falsos
 cambios de mapa y derrotas cuando `SVBK` cambió; esos resultados quedan
 invalidados por la captura banked.
 
+La experiencia ganada se usa como señal de victoria verificable: encontrar una
+especie nueva modifica Pokédex, pero solo derrotar a un rival incrementa EXP.
+
 El entrenamiento usa `bootstrap_states/larvitar_ready_adam.state` por defecto.
 Esto evita gastar episodios en el título y el onboarding y permite entrenar con
 estadísticas reales de equipo desde el primer paso. Se puede seleccionar otro

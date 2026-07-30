@@ -77,7 +77,7 @@ if __name__ == "__main__":
         ),
         "opponent_weight": float(os.getenv("PRISM_OPPONENT_WEIGHT", "5.0")),
         "experience_weight": float(
-            os.getenv("PRISM_EXPERIENCE_WEIGHT", "0.01")
+            os.getenv("PRISM_EXPERIENCE_WEIGHT", "0.25")
         ),
         "stuck_penalty_weight": 0.05,
     }
