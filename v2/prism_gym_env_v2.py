@@ -20,6 +20,8 @@ from prism_memory import (
     ENEMY_HP,
     ENEMY_MAX_HP,
     ENEMY_SPECIES,
+    EVENT_FLAGS,
+    EVENT_FLAG_BYTES,
     ITEM_COUNT,
     ITEMS,
     KEY_ITEM_COUNT,
@@ -67,6 +69,7 @@ class PrismGymEnv(Env):
         self.map_explore_weight = config.get("map_explore_weight", 5.0)
         self.pokedex_seen_weight = config.get("pokedex_seen_weight", 1.0)
         self.pokedex_caught_weight = config.get("pokedex_caught_weight", 2.0)
+        self.event_weight = config.get("event_weight", 1.0)
         self.level_weight = config.get("level_weight", 0.5)
         self.heal_weight = config.get("heal_weight", 0.25)
         self.death_penalty_weight = config.get("death_penalty_weight", 5.0)
@@ -187,6 +190,8 @@ class PrismGymEnv(Env):
         self.max_level_sum = self.read_level_sum()
         self.initial_experience = self.read_experience_sum()
         self.max_experience = self.initial_experience
+        self.initial_event_count = self.read_event_count()
+        self.max_event_count = self.initial_event_count
         self.total_healing = 0.0
         self.total_damage = 0.0
         self.last_enemy_health = self.read_enemy_hp_fraction()
@@ -306,6 +311,8 @@ class PrismGymEnv(Env):
                 "badge": self.get_badges(),
                 "pokedex_seen": pokedex_seen,
                 "pokedex_caught": pokedex_caught,
+                "event_count": self.read_event_count(),
+                "event_progress": self.get_event_progress(),
                 "item_slots": len(items),
                 "item_quantity": sum(quantity for _, quantity in items),
                 "key_items": len(key_items),
@@ -526,6 +533,13 @@ class PrismGymEnv(Env):
         seen = count_bits(self.read_m, self.pokedex_seen_addr, self.pokedex_bytes)
         return seen, caught
 
+    def read_event_count(self):
+        return count_bits(self.read_m, EVENT_FLAGS, EVENT_FLAG_BYTES)
+
+    def get_event_progress(self):
+        self.max_event_count = max(self.max_event_count, self.read_event_count())
+        return max(0, self.max_event_count - self.initial_event_count)
+
     def read_items(self):
         return read_item_pocket(
             self.read_m, ITEM_COUNT, ITEMS, MAX_ITEMS, quantities=True
@@ -583,6 +597,7 @@ class PrismGymEnv(Env):
             "pokedex_caught": self.reward_scale
             * self.pokedex_caught_weight
             * pokedex_caught,
+            "event": self.reward_scale * self.event_weight * self.get_event_progress(),
             "level": self.reward_scale * self.level_weight * self.max_level_sum,
             "heal": self.reward_scale * self.heal_weight * self.total_healing,
             "death": self.reward_scale

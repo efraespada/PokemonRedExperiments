@@ -28,6 +28,7 @@ Estado actual del trabajo de memoria para `Prism`.
 - HP máximo: `0xDD03`, `0xDD33`, `0xDD63`, `0xDD93`, `0xDDC3`, `0xDDF3`
 - `0xDE99-0xDEB8`: Pokédex capturados
 - `0xDEB9-0xDED8`: Pokédex vistos
+- `0xDA72-0xDB6B`: 2000 flags de eventos de historia
 - `0xD866`: número de huecos de objetos normales; pares objeto/cantidad desde
   `0xD867`, con capacidad para 40 huecos
 - `0xD8A4`: número de objetos clave; identificadores desde `0xD8A5`, con
@@ -50,6 +51,8 @@ Estas direcciones están centralizadas en `prism_memory.py`. El entorno expone
 los contadores de Pokédex en la observación y en TensorBoard, y los incorpora a
 la recompensa de progreso. El inventario se registra como métricas de episodio,
 sin cambiar el espacio de observación para mantener compatibles los checkpoints.
+Los flags de eventos se recompensan de forma monotónica respecto al recuento
+inicial del episodio, evitando penalizar flags temporales que vuelvan a cero.
 
 Nuevo checkpoint útil:
 
@@ -163,5 +166,4 @@ checkpoint mediante `PRISM_INIT_STATE`; la ROM también se puede seleccionar con
 
 ## Siguiente objetivo
 
-- identificar y validar el bloque de event flags de historia
 - capturar una transición de medalla para validar los tres bytes de badges

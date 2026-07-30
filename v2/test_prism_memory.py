@@ -9,6 +9,8 @@ from prism_memory import (
     ENEMY_HP,
     ENEMY_MAX_HP,
     ENEMY_SPECIES,
+    EVENT_FLAGS,
+    EVENT_FLAG_BYTES,
     PARTY_COUNT,
     PARTY_EXP,
     PARTY_HP,
@@ -42,6 +44,7 @@ class PrismMemoryTest(unittest.TestCase):
         self.assertEqual(PARTY_MAX_HP, (0xDD03, 0xDD33, 0xDD63, 0xDD93, 0xDDC3, 0xDDF3))
         self.assertEqual(POKEDEX_CAUGHT, 0xDE99)
         self.assertEqual(POKEDEX_SEEN, 0xDEB9)
+        self.assertEqual((EVENT_FLAGS, EVENT_FLAG_BYTES), (0xDA72, 250))
         self.assertEqual(BADGES, (0xDED9, 0xDEDA, 0xDEDB))
         self.assertEqual((ITEM_COUNT, ITEMS, MAX_ITEMS), (0xD866, 0xD867, 40))
         self.assertEqual(
