@@ -2,6 +2,8 @@ import unittest
 
 from prism_memory import (
     BADGES,
+    BALL_COUNT,
+    BALLS,
     BATTLE_MODE,
     ENEMY_LEVEL,
     ENEMY_HP,
@@ -12,6 +14,13 @@ from prism_memory import (
     PARTY_HP,
     PARTY_LEVELS,
     PARTY_MAX_HP,
+    ITEM_COUNT,
+    ITEMS,
+    KEY_ITEM_COUNT,
+    KEY_ITEMS,
+    MAX_BALLS,
+    MAX_ITEMS,
+    MAX_KEY_ITEMS,
     POKEDEX_CAUGHT,
     POKEDEX_SEEN,
     PRISM_WRAM_BANK,
@@ -20,6 +29,7 @@ from prism_memory import (
     count_bits,
     read_u16_be,
     read_u24_be,
+    read_item_pocket,
 )
 
 
@@ -33,6 +43,11 @@ class PrismMemoryTest(unittest.TestCase):
         self.assertEqual(POKEDEX_CAUGHT, 0xDE99)
         self.assertEqual(POKEDEX_SEEN, 0xDEB9)
         self.assertEqual(BADGES, (0xDED9, 0xDEDA, 0xDEDB))
+        self.assertEqual((ITEM_COUNT, ITEMS, MAX_ITEMS), (0xD866, 0xD867, 40))
+        self.assertEqual(
+            (KEY_ITEM_COUNT, KEY_ITEMS, MAX_KEY_ITEMS), (0xD8A4, 0xD8A5, 50)
+        )
+        self.assertEqual((BALL_COUNT, BALLS, MAX_BALLS), (0xD8BC, 0xD8BD, 25))
         self.assertEqual(BATTLE_MODE, 0xD22D)
         self.assertEqual(ENEMY_SPECIES, 0xD206)
         self.assertEqual(ENEMY_LEVEL, 0xD213)
@@ -78,6 +93,22 @@ class PrismMemoryTest(unittest.TestCase):
 
     def test_classify_battle_outcome_keeps_non_decisive_exit_separate(self):
         self.assertEqual(classify_battle_outcome(100, 100, 0.5), "other")
+
+    def test_read_item_pocket_returns_item_quantity_pairs(self):
+        memory = {0x1000: 2, 0x1001: 7, 0x1002: 3, 0x1003: 9, 0x1004: 12}
+        self.assertEqual(
+            read_item_pocket(memory.__getitem__, 0x1000, 0x1001, 40),
+            ((7, 3), (9, 12)),
+        )
+
+    def test_read_item_pocket_supports_key_items_and_clamps_count(self):
+        memory = {0x1000: 9, 0x1001: 4, 0x1002: 8}
+        self.assertEqual(
+            read_item_pocket(
+                memory.__getitem__, 0x1000, 0x1001, 2, quantities=False
+            ),
+            ((4, 1), (8, 1)),
+        )
 
 
 if __name__ == "__main__":

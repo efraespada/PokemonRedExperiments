@@ -97,6 +97,11 @@ def evaluate(env, model, episodes, seed, deterministic=True, battle_model=None):
                 "min_health": min(step["hp"] for step in env.agent_stats),
                 "pokedex_seen": final["pokedex_seen"],
                 "pokedex_caught": final["pokedex_caught"],
+                "item_slots": final["item_slots"],
+                "item_quantity": final["item_quantity"],
+                "key_items": final["key_items"],
+                "ball_slots": final["ball_slots"],
+                "ball_quantity": final["ball_quantity"],
                 "badges": final["badge"],
                 "deaths": final["deaths"],
             }
@@ -125,6 +130,11 @@ def summarize(results):
         "min_health",
         "pokedex_seen",
         "pokedex_caught",
+        "item_slots",
+        "item_quantity",
+        "key_items",
+        "ball_slots",
+        "ball_quantity",
         "badges",
         "deaths",
     )

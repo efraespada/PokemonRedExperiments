@@ -13,11 +13,20 @@ from skimage.transform import downscale_local_mean
 
 from prism_memory import (
     BADGES,
+    BALL_COUNT,
+    BALLS,
     BATTLE_MODE,
     ENEMY_LEVEL,
     ENEMY_HP,
     ENEMY_MAX_HP,
     ENEMY_SPECIES,
+    ITEM_COUNT,
+    ITEMS,
+    KEY_ITEM_COUNT,
+    KEY_ITEMS,
+    MAX_BALLS,
+    MAX_ITEMS,
+    MAX_KEY_ITEMS,
     PARTY_COUNT,
     PARTY_EXP,
     PARTY_HP,
@@ -32,6 +41,7 @@ from prism_memory import (
     count_bits,
     read_u16_be,
     read_u24_be,
+    read_item_pocket,
 )
 
 
@@ -262,6 +272,9 @@ class PrismGymEnv(Env):
         x_pos, y_pos, map_n = self.get_game_coords()
         levels = self.read_party_levels()
         pokedex_seen, pokedex_caught = self.get_pokedex_counts()
+        items = self.read_items()
+        key_items = self.read_key_items()
+        balls = self.read_balls()
         self.agent_stats.append(
             {
                 "step": self.step_count,
@@ -293,6 +306,11 @@ class PrismGymEnv(Env):
                 "badge": self.get_badges(),
                 "pokedex_seen": pokedex_seen,
                 "pokedex_caught": pokedex_caught,
+                "item_slots": len(items),
+                "item_quantity": sum(quantity for _, quantity in items),
+                "key_items": len(key_items),
+                "ball_slots": len(balls),
+                "ball_quantity": sum(quantity for _, quantity in balls),
                 "stuck": self.stuck_penalty_count,
             }
         )
@@ -507,6 +525,25 @@ class PrismGymEnv(Env):
         caught = count_bits(self.read_m, self.pokedex_caught_addr, self.pokedex_bytes)
         seen = count_bits(self.read_m, self.pokedex_seen_addr, self.pokedex_bytes)
         return seen, caught
+
+    def read_items(self):
+        return read_item_pocket(
+            self.read_m, ITEM_COUNT, ITEMS, MAX_ITEMS, quantities=True
+        )
+
+    def read_key_items(self):
+        return read_item_pocket(
+            self.read_m,
+            KEY_ITEM_COUNT,
+            KEY_ITEMS,
+            MAX_KEY_ITEMS,
+            quantities=False,
+        )
+
+    def read_balls(self):
+        return read_item_pocket(
+            self.read_m, BALL_COUNT, BALLS, MAX_BALLS, quantities=True
+        )
 
     def read_party_levels(self):
         return active_party_values(

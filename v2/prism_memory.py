@@ -29,6 +29,16 @@ POKEDEX_BYTES = 32
 POKEDEX_CAUGHT = 0xDE99
 POKEDEX_SEEN = 0xDEB9
 
+ITEM_COUNT = 0xD866
+ITEMS = 0xD867
+MAX_ITEMS = 40
+KEY_ITEM_COUNT = 0xD8A4
+KEY_ITEMS = 0xD8A5
+MAX_KEY_ITEMS = 50
+BALL_COUNT = 0xD8BC
+BALLS = 0xD8BD
+MAX_BALLS = 25
+
 BADGES = (0xDED9, 0xDEDA, 0xDEDB)
 BATTLE_MODE = 0xD22D
 ENEMY_SPECIES = 0xD206
@@ -44,6 +54,18 @@ def classify_battle_outcome(initial_experience, final_experience, party_hp_fract
     if float(party_hp_fraction) <= 0:
         return "defeat"
     return "other"
+
+
+def read_item_pocket(read_byte, count_address, items_address, capacity, quantities=True):
+    count = max(0, min(int(read_byte(count_address)), int(capacity)))
+    stride = 2 if quantities else 1
+    entries = []
+    for index in range(count):
+        address = items_address + index * stride
+        item_id = int(read_byte(address))
+        quantity = int(read_byte(address + 1)) if quantities else 1
+        entries.append((item_id, quantity))
+    return tuple(entries)
 
 
 def count_bits(read_byte, start, length):

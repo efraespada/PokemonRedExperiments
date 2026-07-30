@@ -28,6 +28,12 @@ Estado actual del trabajo de memoria para `Prism`.
 - HP máximo: `0xDD03`, `0xDD33`, `0xDD63`, `0xDD93`, `0xDDC3`, `0xDDF3`
 - `0xDE99-0xDEB8`: Pokédex capturados
 - `0xDEB9-0xDED8`: Pokédex vistos
+- `0xD866`: número de huecos de objetos normales; pares objeto/cantidad desde
+  `0xD867`, con capacidad para 40 huecos
+- `0xD8A4`: número de objetos clave; identificadores desde `0xD8A5`, con
+  capacidad para 50
+- `0xD8BC`: número de huecos de Poké Balls; pares objeto/cantidad desde
+  `0xD8BD`, con capacidad para 25 huecos
 - `0xDED9`: medallas de Naljo
 - `0xDEDA`: medallas de Rijon
 - `0xDEDB`: otras medallas
@@ -42,7 +48,8 @@ Estado actual del trabajo de memoria para `Prism`.
 
 Estas direcciones están centralizadas en `prism_memory.py`. El entorno expone
 los contadores de Pokédex en la observación y en TensorBoard, y los incorpora a
-la recompensa de progreso.
+la recompensa de progreso. El inventario se registra como métricas de episodio,
+sin cambiar el espacio de observación para mantener compatibles los checkpoints.
 
 Nuevo checkpoint útil:
 
