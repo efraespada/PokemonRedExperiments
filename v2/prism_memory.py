@@ -4,11 +4,16 @@ PARTY_MON_SIZE = 0x30
 PARTY_SIZE = 6
 
 PARTY_LEVEL_OFFSET = 0x1F
+PARTY_EXP_OFFSET = 0x08
 PARTY_HP_OFFSET = 0x22
 PARTY_MAX_HP_OFFSET = 0x24
 
 PARTY_LEVELS = tuple(
     PARTY_MON_1 + index * PARTY_MON_SIZE + PARTY_LEVEL_OFFSET
+    for index in range(PARTY_SIZE)
+)
+PARTY_EXP = tuple(
+    PARTY_MON_1 + index * PARTY_MON_SIZE + PARTY_EXP_OFFSET
     for index in range(PARTY_SIZE)
 )
 PARTY_HP = tuple(
@@ -37,6 +42,14 @@ def count_bits(read_byte, start, length):
 
 def read_u16_be(read_byte, start):
     return 256 * int(read_byte(start)) + int(read_byte(start + 1))
+
+
+def read_u24_be(read_byte, start):
+    return (
+        65536 * int(read_byte(start))
+        + 256 * int(read_byte(start + 1))
+        + int(read_byte(start + 2))
+    )
 
 
 def read_u8(read_byte, address):

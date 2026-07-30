@@ -17,6 +17,7 @@ from prism_memory import (
     ENEMY_LEVEL,
     ENEMY_SPECIES,
     PARTY_COUNT,
+    PARTY_EXP,
     PARTY_HP,
     PARTY_LEVELS,
     PARTY_MAX_HP,
@@ -27,6 +28,7 @@ from prism_memory import (
     active_party_values,
     count_bits,
     read_u16_be,
+    read_u24_be,
 )
 
 
@@ -53,6 +55,7 @@ class PrismGymEnv(Env):
         self.heal_weight = config.get("heal_weight", 0.25)
         self.death_penalty_weight = config.get("death_penalty_weight", 5.0)
         self.opponent_weight = config.get("opponent_weight", 5.0)
+        self.experience_weight = config.get("experience_weight", 0.01)
         self.stuck_penalty_weight = config.get("stuck_penalty_weight", 0.05)
         self.stuck_threshold = config.get("stuck_threshold", 600)
         self.instance_id = config.get("instance_id", str(uuid.uuid4())[:8])
@@ -162,6 +165,8 @@ class PrismGymEnv(Env):
         self.last_health = self.read_hp_fraction()
         self.party_size = self.read_party_count()
         self.max_level_sum = self.read_level_sum()
+        self.initial_experience = self.read_experience_sum()
+        self.max_experience = self.initial_experience
         self.total_healing = 0.0
         self.died_count = 0
         self.step_count = 0
@@ -253,6 +258,8 @@ class PrismGymEnv(Env):
                 "last_action": int(action),
                 "pcount": self.read_party_count(),
                 "levels_sum": sum(levels),
+                "experience": self.read_experience_sum(),
+                "experience_gained": self.get_experience_gained(),
                 "hp": self.read_hp_fraction(),
                 "coord_count": len(self.seen_coords),
                 "map_count": len(self.seen_maps),
@@ -449,6 +456,16 @@ class PrismGymEnv(Env):
     def read_level_sum(self):
         return sum(self.read_party_levels())
 
+    def read_experience_sum(self):
+        values = active_party_values(
+            self.read_m, PARTY_EXP, self.read_party_count(), read_u24_be
+        )
+        return sum(values)
+
+    def get_experience_gained(self):
+        self.max_experience = max(self.max_experience, self.read_experience_sum())
+        return max(0, self.max_experience - self.initial_experience)
+
     def get_game_state_reward(self):
         pokedex_seen, pokedex_caught = self.get_pokedex_counts()
         self.max_level_sum = max(self.max_level_sum, self.read_level_sum())
@@ -478,6 +495,9 @@ class PrismGymEnv(Env):
             "opponent": self.reward_scale
             * self.opponent_weight
             * len(self.seen_opponents),
+            "experience": self.reward_scale
+            * self.experience_weight
+            * self.get_experience_gained(),
             "stuck": self.reward_scale
             * self.stuck_penalty_weight
             * self.stuck_penalty_count

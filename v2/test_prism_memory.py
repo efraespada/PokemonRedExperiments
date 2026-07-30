@@ -6,6 +6,7 @@ from prism_memory import (
     ENEMY_LEVEL,
     ENEMY_SPECIES,
     PARTY_COUNT,
+    PARTY_EXP,
     PARTY_HP,
     PARTY_LEVELS,
     PARTY_MAX_HP,
@@ -15,12 +16,14 @@ from prism_memory import (
     active_party_values,
     count_bits,
     read_u16_be,
+    read_u24_be,
 )
 
 
 class PrismMemoryTest(unittest.TestCase):
     def test_confirmed_addresses(self):
         self.assertEqual(PARTY_COUNT, 0xDCD7)
+        self.assertEqual(PARTY_EXP, (0xDCE7, 0xDD17, 0xDD47, 0xDD77, 0xDDA7, 0xDDD7))
         self.assertEqual(PARTY_LEVELS, (0xDCFE, 0xDD2E, 0xDD5E, 0xDD8E, 0xDDBE, 0xDDEE))
         self.assertEqual(PARTY_HP, (0xDD01, 0xDD31, 0xDD61, 0xDD91, 0xDDC1, 0xDDF1))
         self.assertEqual(PARTY_MAX_HP, (0xDD03, 0xDD33, 0xDD63, 0xDD93, 0xDDC3, 0xDDF3))
@@ -39,6 +42,10 @@ class PrismMemoryTest(unittest.TestCase):
     def test_read_u16_be(self):
         memory = {0x1000: 0x12, 0x1001: 0x34}
         self.assertEqual(read_u16_be(memory.__getitem__, 0x1000), 0x1234)
+
+    def test_read_u24_be(self):
+        memory = {0x1000: 0x12, 0x1001: 0x34, 0x1002: 0x56}
+        self.assertEqual(read_u24_be(memory.__getitem__, 0x1000), 0x123456)
 
     def test_active_party_values_ignores_inactive_slots(self):
         memory = {0x1000: 5, 0x1010: 8, 0x1020: 99}
