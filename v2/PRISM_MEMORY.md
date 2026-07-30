@@ -109,6 +109,16 @@ Validación dinámica en `larvitar_ready_adam`:
 - Pokédex capturados: `0 -> 1`
 - medallas: `0`
 
+Validación dinámica durante entrenamiento:
+
+- el par `mapGroup/mapNumber` distinguió 4 mapas en un rollout de 4096 pasos
+- `0xD22D` se activó durante combate y volvió a cero fuera de él
+- el contador de Pokédex visto creció de `1` a `5`
+- el contador de Pokédex capturado permaneció en `1`
+
+Esto confirma que las direcciones de mapa, combate y Pokédex son útiles para
+telemetría y recompensa durante episodios completos, no solo en el bootstrap.
+
 El entrenamiento usa `bootstrap_states/larvitar_ready_adam.state` por defecto.
 Esto evita gastar episodios en el título y el onboarding y permite entrenar con
 estadísticas reales de equipo desde el primer paso. Se puede seleccionar otro
@@ -117,9 +127,6 @@ checkpoint mediante `PRISM_INIT_STATE`; la ROM también se puede seleccionar con
 
 ## Siguiente objetivo
 
-Crear o capturar un `state` ya dentro de gameplay o menú para validar bytes de:
-
-- badges
-- party count
-- Pokédex seen/caught
-- event flags de progreso
+- identificar y validar el bloque de event flags de historia
+- capturar una transición de medalla para validar los tres bytes de badges
+- separar encuentros, victorias y derrotas dentro del modo de batalla
