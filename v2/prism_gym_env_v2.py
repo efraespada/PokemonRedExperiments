@@ -201,6 +201,8 @@ class PrismGymEnv(Env):
         self.discovered_item_ids = set()
         self.discovered_key_item_ids = set()
         self.discovered_ball_ids = set()
+        self.initial_party_species = frozenset(self.read_party_species())
+        self.discovered_party_species = set()
         self.screen_explore_count = 0
         self.coord_explore_count = 0
         self.stuck_penalty_count = 0
@@ -294,6 +296,7 @@ class PrismGymEnv(Env):
         x_pos, y_pos, map_n = self.get_game_coords()
         levels = self.read_party_levels()
         party_species = self.read_party_species()
+        party_species_progress = self.get_party_species_progress()
         pokedex_seen, pokedex_caught = self.get_pokedex_counts()
         pokedex_seen_progress, pokedex_caught_progress = self.get_pokedex_progress()
         items = self.read_items()
@@ -322,6 +325,7 @@ class PrismGymEnv(Env):
                 "last_action": int(action),
                 "pcount": self.read_party_count(),
                 "party_species_count": len(set(party_species)),
+                "party_species_progress": party_species_progress,
                 "levels_sum": sum(levels),
                 "experience": self.read_experience_sum(),
                 "experience_gained": self.get_experience_gained(),
@@ -659,6 +663,13 @@ class PrismGymEnv(Env):
     def read_party_species(self):
         return active_party_values(
             self.read_m, self.party_species_addrs, self.read_party_count()
+        )
+
+    def get_party_species_progress(self):
+        return update_discovered_indices(
+            self.discovered_party_species,
+            self.read_party_species(),
+            self.initial_party_species,
         )
 
     def read_level_sum(self):

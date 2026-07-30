@@ -60,6 +60,8 @@ El progreso de Pokédex aplica el mismo criterio: vistos y capturados iniciales
 no generan recompensa, y cada especie nueva cuenta una sola vez por episodio.
 El inventario conserva también el conjunto de identificadores inicial y reporta
 por separado tipos nuevos de objetos, objetos clave y Poké Balls adquiridos.
+Las especies presentes en el equipo se siguen del mismo modo, permitiendo medir
+incorporaciones nuevas aunque después se depositen o evolucionen.
 Las medallas se reportan tanto como total como separadas por Naljo, Rijon y el
 tercer grupo, facilitando validar cada transición regional. La recompensa usa
 solo las medallas nuevas respecto al estado inicial y conserva el máximo del
