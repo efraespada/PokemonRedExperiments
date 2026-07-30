@@ -120,6 +120,13 @@ python run_prism_interactive.py \
 Use `--always-on` to ignore `agent_enabled.txt`. The same paths can be provided
 through `PRISM_NAV_CHECKPOINT` and `PRISM_BATTLE_CHECKPOINT`.
 
+Package a compatible pair locally with hashes and source metadata:
+
+```bash
+python prism_policy_pair.py --navigation runs_prism/navigation.zip \
+  --battle runs_prism/battle.zip --output-dir policy_pairs/best
+```
+
 Notes:
 - `prism_init.state` is intentionally not committed because it is generated from your ROM.
 - Bootstrap states are also local, generated assets and are not committed.

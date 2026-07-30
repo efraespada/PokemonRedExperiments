@@ -21,6 +21,7 @@ v2/runs_prism/
 v2/runs_prism_bg/
 v2/runs_prism_*/
 /runs_prism_*/
+v2/policy_pairs/
 v2/memory/
 v2/bootstrap_states/
 runs_prism_smoke/
