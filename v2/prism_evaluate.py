@@ -28,12 +28,12 @@ def build_env_config(args, output_dir):
         "screen_explore_weight": 0.005,
         "coord_explore_weight": 0.50,
         "map_explore_weight": 5.0,
-        "pokedex_seen_weight": 0.25,
+        "pokedex_seen_weight": 1.0,
         "pokedex_caught_weight": 2.0,
         "level_weight": 0.5,
         "heal_weight": 0.25,
         "death_penalty_weight": 5.0,
-        "opponent_weight": 1.0,
+        "opponent_weight": 5.0,
         "stuck_penalty_weight": 0.05,
     }
 

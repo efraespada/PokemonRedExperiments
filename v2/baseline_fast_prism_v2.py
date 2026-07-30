@@ -66,14 +66,16 @@ if __name__ == "__main__":
         "map_explore_weight": float(
             os.getenv("PRISM_MAP_EXPLORE_WEIGHT", "5.0")
         ),
-        "pokedex_seen_weight": 0.25,
+        "pokedex_seen_weight": float(
+            os.getenv("PRISM_POKEDEX_SEEN_WEIGHT", "1.0")
+        ),
         "pokedex_caught_weight": 2.0,
         "level_weight": 0.5,
         "heal_weight": 0.25,
         "death_penalty_weight": float(
             os.getenv("PRISM_DEATH_PENALTY_WEIGHT", "5.0")
         ),
-        "opponent_weight": float(os.getenv("PRISM_OPPONENT_WEIGHT", "1.0")),
+        "opponent_weight": float(os.getenv("PRISM_OPPONENT_WEIGHT", "5.0")),
         "stuck_penalty_weight": 0.05,
     }
 
