@@ -1,6 +1,6 @@
 import unittest
 
-from prism_bootstrap import PRESETS
+from prism_bootstrap import LARVITAR_NEARBY_MOVES, PRESETS
 
 
 class PrismBootstrapTest(unittest.TestCase):
@@ -12,6 +12,17 @@ class PrismBootstrapTest(unittest.TestCase):
         self.assertEqual(accept[: len(offer)], offer)
         self.assertEqual(accept[len(offer) :], [("a", 180)] * 12)
         self.assertEqual(ready[-35:], [("a", 180)] * 35)
+
+    def test_larvitar_nearby_preset_stops_five_moves_before_offer(self):
+        nearby = PRESETS["larvitar_nearby_adam"]
+        offer = PRESETS["larvitar_offer_adam"]
+
+        self.assertEqual(LARVITAR_NEARBY_MOVES, 5)
+        self.assertEqual(nearby[-1], ("wait", 240))
+        self.assertEqual(
+            nearby[:-1],
+            offer[: -(LARVITAR_NEARBY_MOVES + 1)],
+        )
 
 
 if __name__ == "__main__":

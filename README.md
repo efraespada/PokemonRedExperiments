@@ -101,6 +101,8 @@ beside the first Larvitar immediately before its dialogue. The existing
 `larvitar_ready_adam` preset continues through that dialogue and starts with
 Larvitar in the party. `larvitar_accept_adam` stops one confirmation before
 Larvitar joins the party, providing the smallest acquisition microtask.
+`larvitar_nearby_adam` adds five movement actions before the offer, bridging
+dialogue training into navigation.
 
 For curriculum training, `PRISM_INIT_STATES` accepts a comma-separated list of
 local PyBoy states. The environment samples one state reproducibly per reset,

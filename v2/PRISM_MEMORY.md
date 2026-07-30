@@ -150,6 +150,8 @@ Checkpoints útiles ya verificados:
   su diálogo; útil para un microcurrículo de interacción
 - `larvitar_accept_adam`: estado una confirmación antes de que Larvitar entre en
   el equipo; una pulsación A completa la microtarea de adquisición
+- `larvitar_nearby_adam`: estado cinco movimientos antes de la oferta, para
+  transferir gradualmente la política desde diálogo hacia navegación
 
 Validación dinámica en `larvitar_ready_adam`:
 

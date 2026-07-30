@@ -216,6 +216,10 @@ LARVITAR_APPROACH = (
     + repeated("left", 1)
 )
 
+LARVITAR_NEARBY_MOVES = 5
+PRESETS["larvitar_nearby_adam"] = (
+    LARVITAR_APPROACH[:-LARVITAR_NEARBY_MOVES] + [("wait", 240)]
+)
 PRESETS["larvitar_offer_adam"] = LARVITAR_APPROACH + [("wait", 240)]
 PRESETS["larvitar_accept_adam"] = (
     PRESETS["larvitar_offer_adam"] + repeated("a", 12, 180)
