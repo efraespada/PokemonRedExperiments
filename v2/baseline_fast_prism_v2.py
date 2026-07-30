@@ -7,7 +7,7 @@ from prism_gym_env_v2 import PrismGymEnv
 from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import CallbackList, CheckpointCallback
 from stable_baselines3.common.utils import set_random_seed
-from stable_baselines3.common.vec_env import SubprocVecEnv
+from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 from tensorboard_callback import TensorboardCallback
 
 
@@ -67,7 +67,16 @@ if __name__ == "__main__":
     print(env_config)
 
     num_cpu = int(os.getenv("PRISM_NUM_CPU", 8))
-    env = SubprocVecEnv([make_env(i, env_config) for i in range(num_cpu)])
+    vec_env = os.getenv("PRISM_VEC_ENV", "subproc").lower()
+    env_factories = [make_env(i, env_config) for i in range(num_cpu)]
+    if vec_env == "dummy":
+        env = DummyVecEnv(env_factories)
+    elif vec_env == "subproc":
+        env = SubprocVecEnv(env_factories)
+    else:
+        raise ValueError(
+            f"Unsupported PRISM_VEC_ENV={vec_env!r}; expected 'subproc' or 'dummy'"
+        )
 
     checkpoint_callback = CheckpointCallback(
         save_freq=ep_length // 2, save_path=sess_path, name_prefix="prism"

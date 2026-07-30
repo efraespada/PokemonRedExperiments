@@ -83,7 +83,9 @@ Suggested setup:
 The trainer uses `bootstrap_states/larvitar_ready_adam.state` by default,
 avoiding the title screen and onboarding dialogue and starting with the first
 Larvitar in the party. You can override the ROM and state paths with `PRISM_ROM`
-and `PRISM_INIT_STATE`.
+and `PRISM_INIT_STATE`. Restricted environments that cannot create subprocesses
+can use `PRISM_VEC_ENV=dummy PRISM_NUM_CPU=1`; normal training uses the faster
+`subproc` vector environment by default.
 
 Notes:
 - `prism_init.state` is intentionally not committed because it is generated from your ROM.
