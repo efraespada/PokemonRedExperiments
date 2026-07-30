@@ -120,6 +120,20 @@ def summarize(results):
     }
 
 
+def success_rates(results):
+    episode_count = len(results)
+    return {
+        "battle": sum(episode["battle_steps"] > 0 for episode in results)
+        / episode_count,
+        "victory": sum(episode["experience_gained"] > 0 for episode in results)
+        / episode_count,
+        "map_transition": sum(episode["maps"] > 1 for episode in results)
+        / episode_count,
+        "death": sum(episode["deaths"] > 0 for episode in results)
+        / episode_count,
+    }
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Evaluate a Prism PPO checkpoint or a random-policy baseline."
@@ -173,9 +187,11 @@ def main():
         "seed": args.seed,
         "episodes": episodes,
         "summary": summarize(episodes),
+        "success_rates": success_rates(episodes),
     }
     args.output.write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps(report["summary"], indent=2))
+    print(json.dumps({"success_rates": report["success_rates"]}, indent=2))
 
 
 if __name__ == "__main__":
