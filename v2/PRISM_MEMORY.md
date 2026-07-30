@@ -62,6 +62,9 @@ El inventario conserva también el conjunto de identificadores inicial y reporta
 por separado tipos nuevos de objetos, objetos clave y Poké Balls adquiridos.
 Las especies presentes en el equipo se siguen del mismo modo, permitiendo medir
 incorporaciones nuevas aunque después se depositen o evolucionen.
+Una pulsación A estacionaria que produce una pantalla nueva fuera de combate se
+registra como interacción productiva. Esta señal ayuda a aprender diálogos y
+objetos sin premiar pulsaciones repetidas sobre la misma pantalla.
 Las medallas se reportan tanto como total como separadas por Naljo, Rijon y el
 tercer grupo, facilitando validar cada transición regional. La recompensa usa
 solo las medallas nuevas respecto al estado inicial y conserva el máximo del

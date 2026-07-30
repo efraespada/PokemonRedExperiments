@@ -41,6 +41,7 @@ from prism_memory import (
     PRISM_WRAM_BANK,
     active_party_values,
     classify_battle_outcome,
+    is_productive_interaction,
     read_u16_be,
     read_u24_be,
     read_item_pocket,
@@ -74,6 +75,7 @@ class PrismGymEnv(Env):
         self.pokedex_seen_weight = config.get("pokedex_seen_weight", 1.0)
         self.pokedex_caught_weight = config.get("pokedex_caught_weight", 2.0)
         self.event_weight = config.get("event_weight", 1.0)
+        self.interaction_weight = config.get("interaction_weight", 0.25)
         self.level_weight = config.get("level_weight", 0.5)
         self.heal_weight = config.get("heal_weight", 0.25)
         self.death_penalty_weight = config.get("death_penalty_weight", 5.0)
@@ -204,6 +206,7 @@ class PrismGymEnv(Env):
         self.initial_party_species = frozenset(self.read_party_species())
         self.discovered_party_species = set()
         self.screen_explore_count = 0
+        self.interaction_count = 0
         self.coord_explore_count = 0
         self.stuck_penalty_count = 0
         self.last_health = self.read_hp_fraction()
@@ -265,9 +268,22 @@ class PrismGymEnv(Env):
         if self.save_video and self.step_count == 0:
             self.start_video()
 
+        coord_before_action = self.coord_key()
+        screen_before_action = self.render(reduce_res=True)[:, :, 0]
         self.run_action_on_emulator(action)
         self.update_recent_actions(action)
-        self.update_screen_exploration()
+        screen_after_action = self.render(reduce_res=True)[:, :, 0]
+        screen_is_new = self.update_screen_exploration(screen_after_action)
+        changed_fraction = np.mean(screen_before_action != screen_after_action)
+        if is_productive_interaction(
+            action,
+            coord_before_action,
+            self.coord_key(),
+            screen_is_new,
+            changed_fraction,
+            self.is_in_battle(),
+        ):
+            self.interaction_count += 1
         self.update_seen_coords()
         self.update_battle_progress()
         self.update_explore_map()
@@ -333,6 +349,7 @@ class PrismGymEnv(Env):
                 "coord_count": len(self.seen_coords),
                 "map_count": len(self.seen_maps),
                 "screen_count": len(self.seen_screen_hashes),
+                "interactions": self.interaction_count,
                 "deaths": self.died_count,
                 "badge": self.get_badges(),
                 "badge_progress": self.get_badge_progress(),
@@ -506,12 +523,15 @@ class PrismGymEnv(Env):
         self.recent_actions = np.roll(self.recent_actions, 1)
         self.recent_actions[0] = action
 
-    def update_screen_exploration(self):
-        screen = self.render(reduce_res=True)[:, :, 0]
+    def update_screen_exploration(self, screen=None):
+        if screen is None:
+            screen = self.render(reduce_res=True)[:, :, 0]
         digest = hashlib.sha1(screen.tobytes()).digest()
         if digest not in self.seen_screen_hashes:
             self.seen_screen_hashes.add(digest)
             self.screen_explore_count += 1
+            return True
+        return False
 
     def update_reward(self):
         self.progress_reward = self.get_game_state_reward()
@@ -706,6 +726,9 @@ class PrismGymEnv(Env):
             * self.pokedex_caught_weight
             * pokedex_caught,
             "event": self.reward_scale * self.event_weight * self.get_event_progress(),
+            "interaction": self.reward_scale
+            * self.interaction_weight
+            * self.interaction_count,
             "level": self.reward_scale * self.level_weight * self.max_level_sum,
             "heal": self.reward_scale * self.heal_weight * self.total_healing,
             "death": self.reward_scale

@@ -30,6 +30,7 @@ from prism_memory import (
     active_party_values,
     classify_battle_outcome,
     count_bits,
+    is_productive_interaction,
     monotonic_progress,
     read_u16_be,
     read_u24_be,
@@ -152,6 +153,23 @@ class PrismMemoryTest(unittest.TestCase):
         self.assertEqual(
             monotonic_progress(2, initial=3, previous_max=maximum),
             (4, 1),
+        )
+
+    def test_productive_interaction_requires_new_stationary_a_screen(self):
+        self.assertTrue(
+            is_productive_interaction(4, (1, 2), (1, 2), True, 0.25, False)
+        )
+        self.assertFalse(
+            is_productive_interaction(4, (1, 2), (2, 2), True, 0.25, False)
+        )
+        self.assertFalse(
+            is_productive_interaction(5, (1, 2), (1, 2), True, 0.25, False)
+        )
+        self.assertFalse(
+            is_productive_interaction(4, (1, 2), (1, 2), True, 0.25, True)
+        )
+        self.assertFalse(
+            is_productive_interaction(4, (1, 2), (1, 2), True, 0.05, False)
         )
 
 

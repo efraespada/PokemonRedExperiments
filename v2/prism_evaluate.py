@@ -78,6 +78,7 @@ def evaluate(env, model, episodes, seed, deterministic=True, battle_model=None):
                 "steps": env.step_count,
                 "coordinates": final["coord_count"],
                 "screens": final["screen_count"],
+                "interactions": final["interactions"],
                 "level_sum": final["levels_sum"],
                 "max_level_sum": max(step["levels_sum"] for step in env.agent_stats),
                 "experience_gained": max(
@@ -128,6 +129,7 @@ def summarize(results):
         "reward",
         "coordinates",
         "screens",
+        "interactions",
         "level_sum",
         "max_level_sum",
         "experience_gained",
@@ -186,6 +188,7 @@ def success_rates(results):
         "victory": rate(lambda episode: episode["victories"] > 0),
         "battle_defeat": rate(lambda episode: episode["battle_defeats"] > 0),
         "map_transition": rate(lambda episode: episode["maps"] > 1),
+        "interaction": rate(lambda episode: episode.get("interactions", 0) > 0),
         "pokedex_seen": rate(
             lambda episode: episode.get("pokedex_seen_progress", 0) > 0
         ),

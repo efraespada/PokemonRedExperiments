@@ -99,6 +99,23 @@ def monotonic_progress(current, initial, previous_max):
     return new_max, max(0, new_max - int(initial))
 
 
+def is_productive_interaction(
+    action,
+    before_coord,
+    after_coord,
+    screen_is_new,
+    changed_fraction,
+    in_battle,
+):
+    return (
+        int(action) == 4
+        and tuple(before_coord) == tuple(after_coord)
+        and bool(screen_is_new)
+        and float(changed_fraction) >= 0.10
+        and not bool(in_battle)
+    )
+
+
 def count_bits(read_byte, start, length):
     return sum(int(read_byte(start + offset)).bit_count() for offset in range(length))
 

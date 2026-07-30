@@ -83,6 +83,9 @@ if __name__ == "__main__":
             os.getenv("PRISM_POKEDEX_SEEN_WEIGHT", "1.0")
         ),
         "pokedex_caught_weight": 2.0,
+        "interaction_weight": float(
+            os.getenv("PRISM_INTERACTION_WEIGHT", "0.25")
+        ),
         "level_weight": 0.5,
         "heal_weight": 0.25,
         "death_penalty_weight": float(
