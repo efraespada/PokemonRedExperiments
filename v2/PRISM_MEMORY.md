@@ -51,8 +51,9 @@ Estas direcciones están centralizadas en `prism_memory.py`. El entorno expone
 los contadores de Pokédex en la observación y en TensorBoard, y los incorpora a
 la recompensa de progreso. El inventario se registra como métricas de episodio,
 sin cambiar el espacio de observación para mantener compatibles los checkpoints.
-Los flags de eventos se recompensan de forma monotónica respecto al recuento
-inicial del episodio, evitando penalizar flags temporales que vuelvan a cero.
+Los flags de eventos se siguen por índice y se recompensan de forma monotónica
+respecto al conjunto inicial del episodio. Así se conserva la identidad de cada
+evento nuevo aunque después sea temporalmente desactivado.
 
 Nuevo checkpoint útil:
 

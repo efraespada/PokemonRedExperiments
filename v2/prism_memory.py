@@ -71,6 +71,16 @@ def read_item_pocket(read_byte, count_address, items_address, capacity, quantiti
     return tuple(entries)
 
 
+def read_set_bit_indices(read_byte, start, length):
+    indices = set()
+    for offset in range(length):
+        value = int(read_byte(start + offset))
+        for bit in range(8):
+            if value & (1 << bit):
+                indices.add(offset * 8 + bit)
+    return frozenset(indices)
+
+
 def count_bits(read_byte, start, length):
     return sum(int(read_byte(start + offset)).bit_count() for offset in range(length))
 

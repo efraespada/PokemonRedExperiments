@@ -44,6 +44,7 @@ from prism_memory import (
     read_u16_be,
     read_u24_be,
     read_item_pocket,
+    read_set_bit_indices,
 )
 
 
@@ -181,6 +182,8 @@ class PrismGymEnv(Env):
         self.seen_maps = set()
         self.seen_opponents = set()
         self.seen_screen_hashes = set()
+        self.initial_event_flags = self.read_event_flags()
+        self.discovered_event_flags = set()
         self.current_event_flags_set = {}
         self.screen_explore_count = 0
         self.coord_explore_count = 0
@@ -190,8 +193,6 @@ class PrismGymEnv(Env):
         self.max_level_sum = self.read_level_sum()
         self.initial_experience = self.read_experience_sum()
         self.max_experience = self.initial_experience
-        self.initial_event_count = self.read_event_count()
-        self.max_event_count = self.initial_event_count
         self.total_healing = 0.0
         self.total_damage = 0.0
         self.last_enemy_health = self.read_enemy_hp_fraction()
@@ -534,11 +535,18 @@ class PrismGymEnv(Env):
         return seen, caught
 
     def read_event_count(self):
-        return count_bits(self.read_m, EVENT_FLAGS, EVENT_FLAG_BYTES)
+        return len(self.read_event_flags())
+
+    def read_event_flags(self):
+        return read_set_bit_indices(self.read_m, EVENT_FLAGS, EVENT_FLAG_BYTES)
 
     def get_event_progress(self):
-        self.max_event_count = max(self.max_event_count, self.read_event_count())
-        return max(0, self.max_event_count - self.initial_event_count)
+        new_flags = self.read_event_flags() - self.initial_event_flags
+        self.discovered_event_flags.update(new_flags)
+        self.current_event_flags_set = {
+            str(index): 1 for index in sorted(self.discovered_event_flags)
+        }
+        return len(self.discovered_event_flags)
 
     def read_items(self):
         return read_item_pocket(
