@@ -16,6 +16,7 @@ from prism_memory import (
     POKEDEX_SEEN,
     PRISM_WRAM_BANK,
     active_party_values,
+    classify_battle_outcome,
     count_bits,
     read_u16_be,
     read_u24_be,
@@ -68,6 +69,15 @@ class PrismMemoryTest(unittest.TestCase):
             active_party_values(memory.__getitem__, (0x1000, 0x1010), -1),
             (),
         )
+
+    def test_classify_battle_outcome_uses_experience_for_victory(self):
+        self.assertEqual(classify_battle_outcome(100, 117, 0.5), "victory")
+
+    def test_classify_battle_outcome_uses_empty_party_for_defeat(self):
+        self.assertEqual(classify_battle_outcome(100, 100, 0.0), "defeat")
+
+    def test_classify_battle_outcome_keeps_non_decisive_exit_separate(self):
+        self.assertEqual(classify_battle_outcome(100, 100, 0.5), "other")
 
 
 if __name__ == "__main__":

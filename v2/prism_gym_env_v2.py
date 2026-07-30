@@ -28,6 +28,7 @@ from prism_memory import (
     POKEDEX_SEEN,
     PRISM_WRAM_BANK,
     active_party_values,
+    classify_battle_outcome,
     count_bits,
     read_u16_be,
     read_u24_be,
@@ -180,6 +181,11 @@ class PrismGymEnv(Env):
         self.total_damage = 0.0
         self.last_enemy_health = self.read_enemy_hp_fraction()
         self.last_in_battle = self.is_in_battle()
+        self.battle_start_experience = self.read_experience_sum()
+        self.encounter_count = int(self.last_in_battle)
+        self.victory_count = 0
+        self.defeat_count = 0
+        self.other_battle_exit_count = 0
         self.died_count = 0
         self.step_count = 0
 
@@ -269,6 +275,10 @@ class PrismGymEnv(Env):
                 "enemy_level": self.read_enemy_level(),
                 "enemy_health": self.read_enemy_hp_fraction(),
                 "damage": self.total_damage,
+                "encounters": self.encounter_count,
+                "victories": self.victory_count,
+                "battle_defeats": self.defeat_count,
+                "other_battle_exits": self.other_battle_exit_count,
                 "opponent_count": len(self.seen_opponents),
                 "last_action": int(action),
                 "pcount": self.read_party_count(),
@@ -364,6 +374,9 @@ class PrismGymEnv(Env):
 
     def update_battle_progress(self):
         in_battle = self.is_in_battle()
+        if in_battle and not self.last_in_battle:
+            self.encounter_count += 1
+            self.battle_start_experience = self.read_experience_sum()
         if in_battle:
             species = self.read_enemy_species()
             if species:
@@ -373,6 +386,18 @@ class PrismGymEnv(Env):
                 self.total_damage += self.last_enemy_health - health
             self.last_enemy_health = health
         else:
+            if self.last_in_battle:
+                outcome = classify_battle_outcome(
+                    self.battle_start_experience,
+                    self.read_experience_sum(),
+                    self.read_hp_fraction(),
+                )
+                if outcome == "victory":
+                    self.victory_count += 1
+                elif outcome == "defeat":
+                    self.defeat_count += 1
+                else:
+                    self.other_battle_exit_count += 1
             self.last_enemy_health = 0.0
         self.last_in_battle = in_battle
 

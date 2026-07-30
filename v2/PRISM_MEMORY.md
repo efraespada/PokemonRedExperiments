@@ -144,6 +144,9 @@ invalidados por la captura banked.
 
 La experiencia ganada se usa como señal de victoria verificable: encontrar una
 especie nueva modifica Pokédex, pero solo derrotar a un rival incrementa EXP.
+El entorno registra por separado inicios de encuentro y salidas por victoria,
+derrota o salida no decisiva. Una victoria requiere aumento de EXP durante el
+combate; una derrota requiere que el HP total del equipo llegue a cero.
 
 El entrenamiento usa `bootstrap_states/larvitar_ready_adam.state` por defecto.
 Esto evita gastar episodios en el título y el onboarding y permite entrenar con
@@ -155,4 +158,3 @@ checkpoint mediante `PRISM_INIT_STATE`; la ROM también se puede seleccionar con
 
 - identificar y validar el bloque de event flags de historia
 - capturar una transición de medalla para validar los tres bytes de badges
-- separar encuentros, victorias y derrotas dentro del modo de batalla

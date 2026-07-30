@@ -38,6 +38,14 @@ ENEMY_MAX_HP = 0xD218
 PRISM_WRAM_BANK = 1
 
 
+def classify_battle_outcome(initial_experience, final_experience, party_hp_fraction):
+    if int(final_experience) > int(initial_experience):
+        return "victory"
+    if float(party_hp_fraction) <= 0:
+        return "defeat"
+    return "other"
+
+
 def count_bits(read_byte, start, length):
     return sum(int(read_byte(start + offset)).bit_count() for offset in range(length))
 

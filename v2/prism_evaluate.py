@@ -86,6 +86,10 @@ def evaluate(env, model, episodes, seed, deterministic=True, battle_model=None):
                 "party_count": final["pcount"],
                 "maps": len(visited_maps),
                 "battle_steps": sum(step["battle"] for step in env.agent_stats),
+                "encounters": final["encounters"],
+                "victories": final["victories"],
+                "battle_defeats": final["battle_defeats"],
+                "other_battle_exits": final["other_battle_exits"],
                 "opponents": max(step["opponent_count"] for step in env.agent_stats),
                 "max_enemy_level": max(
                     step["enemy_level"] for step in env.agent_stats
@@ -112,6 +116,10 @@ def summarize(results):
         "party_count",
         "maps",
         "battle_steps",
+        "encounters",
+        "victories",
+        "battle_defeats",
+        "other_battle_exits",
         "opponents",
         "max_enemy_level",
         "min_health",
@@ -133,9 +141,10 @@ def summarize(results):
 def success_rates(results):
     episode_count = len(results)
     return {
-        "battle": sum(episode["battle_steps"] > 0 for episode in results)
+        "battle": sum(episode["encounters"] > 0 for episode in results) / episode_count,
+        "victory": sum(episode["victories"] > 0 for episode in results)
         / episode_count,
-        "victory": sum(episode["experience_gained"] > 0 for episode in results)
+        "battle_defeat": sum(episode["battle_defeats"] > 0 for episode in results)
         / episode_count,
         "map_transition": sum(episode["maps"] > 1 for episode in results)
         / episode_count,
