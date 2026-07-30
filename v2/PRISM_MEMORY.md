@@ -34,6 +34,8 @@ Estado actual del trabajo de memoria para `Prism`.
 - `0xD22D`: modo de batalla
 - `0xD206`: especie rival; validado como `27` durante un encuentro con Shinx
 - `0xD213`: nivel rival; validado como `2` en ese mismo encuentro
+- `0xD216-0xD217`: HP rival actual; validado dinámicamente `13 → 2 → 0`
+- `0xD218-0xD219`: HP rival máximo; estable en `13` para ese Shinx
 - todas estas direcciones `0xDxxx` pertenecen a WRAM banco 1; deben leerse
   explícitamente como `memory[1, address]` porque Prism cambia `SVBK` durante
   combates y transiciones

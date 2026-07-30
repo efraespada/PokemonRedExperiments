@@ -35,6 +35,7 @@ def build_env_config(args, output_dir):
         "death_penalty_weight": 5.0,
         "opponent_weight": 5.0,
         "experience_weight": 0.25,
+        "damage_weight": 5.0,
         "stuck_penalty_weight": 0.05,
     }
 
@@ -74,6 +75,7 @@ def evaluate(env, model, episodes, seed, deterministic=True):
                 "experience_gained": max(
                     step["experience_gained"] for step in env.agent_stats
                 ),
+                "damage": max(step["damage"] for step in env.agent_stats),
                 "party_count": final["pcount"],
                 "maps": len(visited_maps),
                 "battle_steps": sum(step["battle"] for step in env.agent_stats),
@@ -99,6 +101,7 @@ def summarize(results):
         "level_sum",
         "max_level_sum",
         "experience_gained",
+        "damage",
         "party_count",
         "maps",
         "battle_steps",

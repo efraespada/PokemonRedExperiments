@@ -15,6 +15,8 @@ from prism_memory import (
     BADGES,
     BATTLE_MODE,
     ENEMY_LEVEL,
+    ENEMY_HP,
+    ENEMY_MAX_HP,
     ENEMY_SPECIES,
     PARTY_COUNT,
     PARTY_EXP,
@@ -59,6 +61,7 @@ class PrismGymEnv(Env):
         self.death_penalty_weight = config.get("death_penalty_weight", 5.0)
         self.opponent_weight = config.get("opponent_weight", 5.0)
         self.experience_weight = config.get("experience_weight", 0.25)
+        self.damage_weight = config.get("damage_weight", 5.0)
         self.stuck_penalty_weight = config.get("stuck_penalty_weight", 0.05)
         self.stuck_threshold = config.get("stuck_threshold", 600)
         self.instance_id = config.get("instance_id", str(uuid.uuid4())[:8])
@@ -174,6 +177,9 @@ class PrismGymEnv(Env):
         self.initial_experience = self.read_experience_sum()
         self.max_experience = self.initial_experience
         self.total_healing = 0.0
+        self.total_damage = 0.0
+        self.last_enemy_health = self.read_enemy_hp_fraction()
+        self.last_in_battle = self.is_in_battle()
         self.died_count = 0
         self.step_count = 0
 
@@ -210,7 +216,7 @@ class PrismGymEnv(Env):
                 dtype=np.int64,
             ),
             "pokedex": np.array([pokedex_seen, pokedex_caught], dtype=np.int64),
-            "events": np.zeros((self.event_obs_length,), dtype=np.int8),
+            "events": self.read_battle_bits(),
             "map": self.get_explore_map()[:, :, None],
             "recent_actions": self.recent_actions,
         }
@@ -261,6 +267,8 @@ class PrismGymEnv(Env):
                 "battle": int(self.is_in_battle()),
                 "enemy_species": self.read_enemy_species(),
                 "enemy_level": self.read_enemy_level(),
+                "enemy_health": self.read_enemy_hp_fraction(),
+                "damage": self.total_damage,
                 "opponent_count": len(self.seen_opponents),
                 "last_action": int(action),
                 "pcount": self.read_party_count(),
@@ -342,11 +350,31 @@ class PrismGymEnv(Env):
     def read_enemy_level(self):
         return self.read_m(ENEMY_LEVEL) if self.is_in_battle() else 0
 
+    def read_enemy_hp_fraction(self):
+        if not self.is_in_battle():
+            return 0.0
+        current_hp = read_u16_be(self.read_m, ENEMY_HP)
+        max_hp = max(1, read_u16_be(self.read_m, ENEMY_MAX_HP))
+        return min(1.0, current_hp / max_hp)
+
+    def read_battle_bits(self):
+        health = round(self.read_enemy_hp_fraction() * 127)
+        bits = [int(bit) for bit in f"{health:07b}"]
+        return np.array([int(self.is_in_battle()), *bits], dtype=np.int8)
+
     def update_battle_progress(self):
-        if self.is_in_battle():
+        in_battle = self.is_in_battle()
+        if in_battle:
             species = self.read_enemy_species()
             if species:
                 self.seen_opponents.add(species)
+            health = self.read_enemy_hp_fraction()
+            if self.last_in_battle and health < self.last_enemy_health:
+                self.total_damage += self.last_enemy_health - health
+            self.last_enemy_health = health
+        else:
+            self.last_enemy_health = 0.0
+        self.last_in_battle = in_battle
 
     def coord_key(self):
         x_pos, y_pos, map_n = self.get_game_coords()
@@ -505,6 +533,7 @@ class PrismGymEnv(Env):
             "experience": self.reward_scale
             * self.experience_weight
             * self.get_experience_gained(),
+            "damage": self.reward_scale * self.damage_weight * self.total_damage,
             "stuck": self.reward_scale
             * self.stuck_penalty_weight
             * self.stuck_penalty_count

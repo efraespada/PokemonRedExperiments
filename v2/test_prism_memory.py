@@ -4,6 +4,8 @@ from prism_memory import (
     BADGES,
     BATTLE_MODE,
     ENEMY_LEVEL,
+    ENEMY_HP,
+    ENEMY_MAX_HP,
     ENEMY_SPECIES,
     PARTY_COUNT,
     PARTY_EXP,
@@ -33,6 +35,8 @@ class PrismMemoryTest(unittest.TestCase):
         self.assertEqual(BATTLE_MODE, 0xD22D)
         self.assertEqual(ENEMY_SPECIES, 0xD206)
         self.assertEqual(ENEMY_LEVEL, 0xD213)
+        self.assertEqual(ENEMY_HP, 0xD216)
+        self.assertEqual(ENEMY_MAX_HP, 0xD218)
         self.assertEqual(PRISM_WRAM_BANK, 1)
 
     def test_count_bits(self):
