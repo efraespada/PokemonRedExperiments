@@ -66,6 +66,24 @@ Replaces the frame KNN with a coordinate based exploration reward, as well as so
 2. Run:
 ```python baseline_fast_v2.py```
 
+### Pokemon Prism (experimental)
+
+This fork also includes an experimental `Pokemon Prism` environment under `v2/`.
+Unlike the original `Pokemon Red` setup, the Prism variant avoids hard dependencies on Red-specific event flags and the global map, so it can boot from a Prism ROM and train with screen and coordinate exploration rewards.
+
+Suggested setup:
+
+1. Place your legally obtained Prism ROM at the repo root as `PokemonPrism.gbc`.
+2. Move into `v2/`.
+3. Generate an initial emulator state:
+```python generate_prism_init_state.py --rom ../PokemonPrism.gbc```
+4. Train with:
+```python baseline_fast_prism_v2.py```
+
+Notes:
+- `prism_init.state` is intentionally not committed because it is generated from your ROM.
+- The reward shaping is currently conservative and generic; it is meant to provide a working starting point for Prism-specific iteration rather than feature parity with the Red environment.
+
 ## Tracking Training Progress 📈
 
 ### Training Broadcast
