@@ -16,6 +16,7 @@ from prism_memory import (
     PARTY_HP,
     PARTY_LEVELS,
     PARTY_MAX_HP,
+    PARTY_SPECIES,
     ITEM_COUNT,
     ITEMS,
     KEY_ITEM_COUNT,
@@ -41,6 +42,7 @@ from prism_memory import (
 class PrismMemoryTest(unittest.TestCase):
     def test_confirmed_addresses(self):
         self.assertEqual(PARTY_COUNT, 0xDCD7)
+        self.assertEqual(PARTY_SPECIES, (0xDCDF, 0xDD0F, 0xDD3F, 0xDD6F, 0xDD9F, 0xDDCF))
         self.assertEqual(PARTY_EXP, (0xDCE7, 0xDD17, 0xDD47, 0xDD77, 0xDDA7, 0xDDD7))
         self.assertEqual(PARTY_LEVELS, (0xDCFE, 0xDD2E, 0xDD5E, 0xDD8E, 0xDDBE, 0xDDEE))
         self.assertEqual(PARTY_HP, (0xDD01, 0xDD31, 0xDD61, 0xDD91, 0xDDC1, 0xDDF1))

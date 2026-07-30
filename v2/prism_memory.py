@@ -12,6 +12,10 @@ PARTY_LEVELS = tuple(
     PARTY_MON_1 + index * PARTY_MON_SIZE + PARTY_LEVEL_OFFSET
     for index in range(PARTY_SIZE)
 )
+PARTY_SPECIES = tuple(
+    PARTY_MON_1 + index * PARTY_MON_SIZE
+    for index in range(PARTY_SIZE)
+)
 PARTY_EXP = tuple(
     PARTY_MON_1 + index * PARTY_MON_SIZE + PARTY_EXP_OFFSET
     for index in range(PARTY_SIZE)

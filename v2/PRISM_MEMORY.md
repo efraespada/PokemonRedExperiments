@@ -21,6 +21,8 @@ Estado actual del trabajo de memoria para `Prism`.
 - `0xDCD7`: número de Pokémon en el equipo
 - `0xDCDF`: inicio de la primera estructura de Pokémon; cada estructura ocupa
   `0x30` bytes
+- especies del equipo: `0xDCDF`, `0xDD0F`, `0xDD3F`, `0xDD6F`, `0xDD9F`,
+  `0xDDCF`
 - niveles: `0xDCFE`, `0xDD2E`, `0xDD5E`, `0xDD8E`, `0xDDBE`, `0xDDEE`
 - experiencia (3 bytes big-endian): `0xDCE7`, `0xDD17`, `0xDD47`,
   `0xDD77`, `0xDDA7`, `0xDDD7`

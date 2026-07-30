@@ -34,6 +34,7 @@ from prism_memory import (
     PARTY_HP,
     PARTY_LEVELS,
     PARTY_MAX_HP,
+    PARTY_SPECIES,
     POKEDEX_BYTES,
     POKEDEX_CAUGHT,
     POKEDEX_SEEN,
@@ -92,6 +93,7 @@ class PrismGymEnv(Env):
             },
         )
         self.level_addrs = config.get("level_addrs", PARTY_LEVELS)
+        self.party_species_addrs = config.get("party_species_addrs", PARTY_SPECIES)
         self.hp_addrs = config.get("hp_addrs", PARTY_HP)
         self.max_hp_addrs = config.get("max_hp_addrs", PARTY_MAX_HP)
         self.badge_addrs = config.get("badge_addrs", BADGES)
@@ -282,6 +284,7 @@ class PrismGymEnv(Env):
     def append_agent_stats(self, action):
         x_pos, y_pos, map_n = self.get_game_coords()
         levels = self.read_party_levels()
+        party_species = self.read_party_species()
         pokedex_seen, pokedex_caught = self.get_pokedex_counts()
         pokedex_seen_progress, pokedex_caught_progress = self.get_pokedex_progress()
         items = self.read_items()
@@ -308,6 +311,7 @@ class PrismGymEnv(Env):
                 "opponent_count": len(self.seen_opponents),
                 "last_action": int(action),
                 "pcount": self.read_party_count(),
+                "party_species_count": len(set(party_species)),
                 "levels_sum": sum(levels),
                 "experience": self.read_experience_sum(),
                 "experience_gained": self.get_experience_gained(),
@@ -607,6 +611,11 @@ class PrismGymEnv(Env):
     def read_party_levels(self):
         return active_party_values(
             self.read_m, self.level_addrs, self.read_party_count()
+        )
+
+    def read_party_species(self):
+        return active_party_values(
+            self.read_m, self.party_species_addrs, self.read_party_count()
         )
 
     def read_level_sum(self):
