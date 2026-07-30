@@ -42,12 +42,21 @@ if __name__ == "__main__":
             "Generate it with: python prism_bootstrap.py --rom ../PokemonPrism.gbc "
             "--preset larvitar_ready_adam"
         )
+    init_states = [
+        Path(value.strip()).resolve()
+        for value in os.getenv("PRISM_INIT_STATES", str(init_state)).split(",")
+        if value.strip()
+    ]
+    missing_states = [state for state in init_states if not state.is_file()]
+    if missing_states:
+        raise FileNotFoundError(f"Prism curriculum states not found: {missing_states}")
 
     env_config = {
         "headless": True,
         "save_final_state": False,
         "action_freq": 24,
         "init_state": str(init_state),
+        "init_states": tuple(str(state) for state in init_states),
         "max_steps": ep_length,
         "print_rewards": os.getenv("PRISM_PRINT_REWARDS", "0") == "1",
         "save_video": False,

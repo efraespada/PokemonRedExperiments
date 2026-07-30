@@ -40,6 +40,9 @@ class PrismGymEnv(Env):
         self.print_rewards = config["print_rewards"]
         self.headless = config["headless"]
         self.init_state = config["init_state"]
+        self.init_states = tuple(config.get("init_states", (self.init_state,)))
+        if not self.init_states:
+            raise ValueError("init_states must contain at least one state")
         self.act_freq = config["action_freq"]
         self.max_steps = config["max_steps"]
         self.save_video = config["save_video"]
@@ -144,8 +147,11 @@ class PrismGymEnv(Env):
             self.pyboy.set_emulation_speed(6)
 
     def reset(self, seed=None, options=None):
+        super().reset(seed=seed)
         self.seed = seed
-        with open(self.init_state, "rb") as f:
+        self.init_state_index = int(self.np_random.integers(len(self.init_states)))
+        selected_state = self.init_states[self.init_state_index]
+        with open(selected_state, "rb") as f:
             self.pyboy.load_state(f)
 
         self.agent_stats = []
@@ -247,6 +253,7 @@ class PrismGymEnv(Env):
         self.agent_stats.append(
             {
                 "step": self.step_count,
+                "init_state": self.init_state_index,
                 "x": x_pos,
                 "y": y_pos,
                 "map": map_n,

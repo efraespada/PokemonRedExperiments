@@ -93,6 +93,10 @@ screen changes, use four PPO optimization epochs, and can be tuned with the
 reapply those optimizer settings, and `PRISM_CHECKPOINT_FREQ` controls how often
 intermediate policies are preserved for evaluation.
 
+For curriculum training, `PRISM_INIT_STATES` accepts a comma-separated list of
+local PyBoy states. The environment samples one state reproducibly per reset,
+allowing mixed overworld and battle practice.
+
 Evaluate a checkpoint deterministically and compare it with a seeded random
 baseline:
 ```bash
