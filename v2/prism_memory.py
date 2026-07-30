@@ -26,6 +26,7 @@ POKEDEX_SEEN = 0xDEB9
 
 BADGES = (0xDED9, 0xDEDA, 0xDEDB)
 BATTLE_MODE = 0xD22D
+PRISM_WRAM_BANK = 1
 
 
 def count_bits(read_byte, start, length):

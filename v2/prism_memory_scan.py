@@ -6,6 +6,8 @@ import numpy as np
 from pyboy import PyBoy
 from pyboy.utils import WindowEvent
 
+from prism_memory import PRISM_WRAM_BANK
+
 
 INPUTS = {
     "a": (WindowEvent.PRESS_BUTTON_A, WindowEvent.RELEASE_BUTTON_A),
@@ -37,32 +39,35 @@ def parse_script(script):
 def snapshot_memory(pyboy):
     ranges = {
         "wram0": np.array([pyboy.memory[a] for a in range(0xC000, 0xD000)], dtype=np.uint8),
-        "wramx": np.array([pyboy.memory[a] for a in range(0xD000, 0xE000)], dtype=np.uint8),
+        "wramx": np.array(
+            [pyboy.memory[PRISM_WRAM_BANK, a] for a in range(0xD000, 0xE000)],
+            dtype=np.uint8,
+        ),
         "hram": np.array([pyboy.memory[a] for a in range(0xFF80, 0xFFFF)], dtype=np.uint8),
     }
     summary = {
         "coord_candidates_red_style": {
-            "d35d": int(pyboy.memory[0xD35D]),
-            "d35e": int(pyboy.memory[0xD35E]),
-            "d361": int(pyboy.memory[0xD361]),
-            "d362": int(pyboy.memory[0xD362]),
+            "d35d": int(pyboy.memory[PRISM_WRAM_BANK, 0xD35D]),
+            "d35e": int(pyboy.memory[PRISM_WRAM_BANK, 0xD35E]),
+            "d361": int(pyboy.memory[PRISM_WRAM_BANK, 0xD361]),
+            "d362": int(pyboy.memory[PRISM_WRAM_BANK, 0xD362]),
         },
         "coord_candidates_gen2_style": {
-            "dcb5": int(pyboy.memory[0xDCB5]),
-            "dcb6": int(pyboy.memory[0xDCB6]),
-            "dcb7": int(pyboy.memory[0xDCB7]),
-            "dcb8": int(pyboy.memory[0xDCB8]),
+            "dcb5": int(pyboy.memory[PRISM_WRAM_BANK, 0xDCB5]),
+            "dcb6": int(pyboy.memory[PRISM_WRAM_BANK, 0xDCB6]),
+            "dcb7": int(pyboy.memory[PRISM_WRAM_BANK, 0xDCB7]),
+            "dcb8": int(pyboy.memory[PRISM_WRAM_BANK, 0xDCB8]),
         },
         "badge_candidates": {
-            "d356": int(pyboy.memory[0xD356]),
-            "d57c": int(pyboy.memory[0xD57C]),
-            "d857": int(pyboy.memory[0xD857]),
-            "dcd8": int(pyboy.memory[0xDCD8]),
+            "d356": int(pyboy.memory[PRISM_WRAM_BANK, 0xD356]),
+            "d57c": int(pyboy.memory[PRISM_WRAM_BANK, 0xD57C]),
+            "d857": int(pyboy.memory[PRISM_WRAM_BANK, 0xD857]),
+            "dcd8": int(pyboy.memory[PRISM_WRAM_BANK, 0xDCD8]),
         },
         "party_candidates": {
-            "dcd7": int(pyboy.memory[0xDCD7]),
-            "dcd8": int(pyboy.memory[0xDCD8]),
-            "dcd9": int(pyboy.memory[0xDCD9]),
+            "dcd7": int(pyboy.memory[PRISM_WRAM_BANK, 0xDCD7]),
+            "dcd8": int(pyboy.memory[PRISM_WRAM_BANK, 0xDCD8]),
+            "dcd9": int(pyboy.memory[PRISM_WRAM_BANK, 0xDCD9]),
         },
     }
     return ranges, summary

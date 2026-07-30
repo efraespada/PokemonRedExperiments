@@ -21,6 +21,7 @@ from prism_memory import (
     POKEDEX_BYTES,
     POKEDEX_CAUGHT,
     POKEDEX_SEEN,
+    PRISM_WRAM_BANK,
     active_party_values,
     count_bits,
     read_u16_be,
@@ -386,6 +387,8 @@ class PrismGymEnv(Env):
             self.map_frame_writer.close()
 
     def read_m(self, addr):
+        if 0xD000 <= addr < 0xE000:
+            return self.pyboy.memory[PRISM_WRAM_BANK, addr]
         return self.pyboy.memory[addr]
 
     def read_badges_bits(self):

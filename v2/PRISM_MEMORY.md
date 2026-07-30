@@ -30,6 +30,9 @@ Estado actual del trabajo de memoria para `Prism`.
 - `0xDEDA`: medallas de Rijon
 - `0xDEDB`: otras medallas
 - `0xD22D`: modo de batalla
+- todas estas direcciones `0xDxxx` pertenecen a WRAM banco 1; deben leerse
+  explícitamente como `memory[1, address]` porque Prism cambia `SVBK` durante
+  combates y transiciones
 
 Estas direcciones están centralizadas en `prism_memory.py`. El entorno expone
 los contadores de Pokédex en la observación y en TensorBoard, y los incorpora a
@@ -75,6 +78,15 @@ cd v2
 python prism_memory_diff.py ../memory/base.npz ../memory/after_a.npz --output ../memory/base_vs_after_a.json
 ```
 
+Capturar automáticamente memoria justo antes y después de transiciones de
+combate producidas por un checkpoint:
+
+```bash
+python prism_battle_trace.py \
+  --checkpoint runs_prism/prism_10240_steps.zip \
+  --steps 4096 --seed 41
+```
+
 Generar estados intermedios reproducibles del onboarding:
 
 ```bash
@@ -111,13 +123,15 @@ Validación dinámica en `larvitar_ready_adam`:
 
 Validación dinámica durante entrenamiento:
 
-- el par `mapGroup/mapNumber` distinguió 4 mapas en un rollout de 4096 pasos
 - `0xD22D` se activó durante combate y volvió a cero fuera de él
-- el contador de Pokédex visto creció de `1` a `5`
+- el contador de Pokédex visto creció de `1` a `2` al encontrar una especie nueva
 - el contador de Pokédex capturado permaneció en `1`
+- el par `mapGroup/mapNumber` permaneció estable durante ese combate
 
-Esto confirma que las direcciones de mapa, combate y Pokédex son útiles para
-telemetría y recompensa durante episodios completos, no solo en el bootstrap.
+Esto confirma que las direcciones de combate y Pokédex son útiles durante
+episodios completos. Una lectura anterior sin banco explícito produjo falsos
+cambios de mapa y derrotas cuando `SVBK` cambió; esos resultados quedan
+invalidados por la captura banked.
 
 El entrenamiento usa `bootstrap_states/larvitar_ready_adam.state` por defecto.
 Esto evita gastar episodios en el título y el onboarding y permite entrenar con
