@@ -54,6 +54,8 @@ sin cambiar el espacio de observación para mantener compatibles los checkpoints
 Los flags de eventos se siguen por índice y se recompensan de forma monotónica
 respecto al conjunto inicial del episodio. Así se conserva la identidad de cada
 evento nuevo aunque después sea temporalmente desactivado.
+Las medallas se reportan tanto como total como separadas por Naljo, Rijon y el
+tercer grupo, facilitando validar cada transición regional.
 
 Nuevo checkpoint útil:
 

@@ -106,6 +106,9 @@ def evaluate(env, model, episodes, seed, deterministic=True, battle_model=None):
                 "ball_slots": final["ball_slots"],
                 "ball_quantity": final["ball_quantity"],
                 "badges": final["badge"],
+                "badges_naljo": final["badges_naljo"],
+                "badges_rijon": final["badges_rijon"],
+                "badges_other": final["badges_other"],
                 "deaths": final["deaths"],
             }
         )
@@ -141,6 +144,9 @@ def summarize(results):
         "ball_slots",
         "ball_quantity",
         "badges",
+        "badges_naljo",
+        "badges_rijon",
+        "badges_other",
         "deaths",
     )
     return {

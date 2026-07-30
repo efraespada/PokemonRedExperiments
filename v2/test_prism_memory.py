@@ -32,6 +32,7 @@ from prism_memory import (
     read_u16_be,
     read_u24_be,
     read_item_pocket,
+    read_bit_counts,
     read_set_bit_indices,
 )
 
@@ -119,6 +120,13 @@ class PrismMemoryTest(unittest.TestCase):
         self.assertEqual(
             read_set_bit_indices(memory.__getitem__, 0x1000, 2),
             frozenset({0, 7, 9, 10}),
+        )
+
+    def test_read_bit_counts_keeps_badge_regions_separate(self):
+        memory = {0x1000: 0b10100001, 0x1001: 0b11110000, 0x1002: 0}
+        self.assertEqual(
+            read_bit_counts(memory.__getitem__, (0x1000, 0x1001, 0x1002)),
+            (3, 4, 0),
         )
 
 

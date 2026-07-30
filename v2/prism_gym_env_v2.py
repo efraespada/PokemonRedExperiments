@@ -44,6 +44,7 @@ from prism_memory import (
     read_u16_be,
     read_u24_be,
     read_item_pocket,
+    read_bit_counts,
     read_set_bit_indices,
 )
 
@@ -281,6 +282,7 @@ class PrismGymEnv(Env):
         items = self.read_items()
         key_items = self.read_key_items()
         balls = self.read_balls()
+        naljo_badges, rijon_badges, other_badges = self.read_badge_counts()
         self.agent_stats.append(
             {
                 "step": self.step_count,
@@ -310,6 +312,9 @@ class PrismGymEnv(Env):
                 "screen_count": len(self.seen_screen_hashes),
                 "deaths": self.died_count,
                 "badge": self.get_badges(),
+                "badges_naljo": naljo_badges,
+                "badges_rijon": rijon_badges,
+                "badges_other": other_badges,
                 "pokedex_seen": pokedex_seen,
                 "pokedex_caught": pokedex_caught,
                 "event_count": self.read_event_count(),
@@ -523,6 +528,10 @@ class PrismGymEnv(Env):
 
     def get_badges(self):
         return sum(self.read_badges_bits())
+
+    def read_badge_counts(self):
+        counts = read_bit_counts(self.read_m, self.badge_addrs)
+        return tuple((*counts, 0, 0, 0)[:3])
 
     def read_party_count(self):
         if self.party_count_addr is None:
