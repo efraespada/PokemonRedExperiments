@@ -195,6 +195,12 @@ class PrismGymEnv(Env):
         self.discovered_pokedex_caught = set()
         self.initial_badges = self.get_badges()
         self.max_badges = self.initial_badges
+        self.initial_item_ids = self.read_item_ids()
+        self.initial_key_item_ids = self.read_key_item_ids()
+        self.initial_ball_ids = self.read_ball_ids()
+        self.discovered_item_ids = set()
+        self.discovered_key_item_ids = set()
+        self.discovered_ball_ids = set()
         self.screen_explore_count = 0
         self.coord_explore_count = 0
         self.stuck_penalty_count = 0
@@ -293,6 +299,7 @@ class PrismGymEnv(Env):
         items = self.read_items()
         key_items = self.read_key_items()
         balls = self.read_balls()
+        item_progress, key_item_progress, ball_progress = self.get_inventory_progress()
         naljo_badges, rijon_badges, other_badges = self.read_badge_counts()
         self.agent_stats.append(
             {
@@ -339,6 +346,9 @@ class PrismGymEnv(Env):
                 "key_items": len(key_items),
                 "ball_slots": len(balls),
                 "ball_quantity": sum(quantity for _, quantity in balls),
+                "item_progress": item_progress,
+                "key_item_progress": key_item_progress,
+                "ball_progress": ball_progress,
                 "stuck": self.stuck_penalty_count,
             }
         )
@@ -617,6 +627,29 @@ class PrismGymEnv(Env):
         return read_item_pocket(
             self.read_m, BALL_COUNT, BALLS, MAX_BALLS, quantities=True
         )
+
+    def read_item_ids(self):
+        return frozenset(item_id for item_id, _ in self.read_items())
+
+    def read_key_item_ids(self):
+        return frozenset(item_id for item_id, _ in self.read_key_items())
+
+    def read_ball_ids(self):
+        return frozenset(item_id for item_id, _ in self.read_balls())
+
+    def get_inventory_progress(self):
+        item_progress = update_discovered_indices(
+            self.discovered_item_ids, self.read_item_ids(), self.initial_item_ids
+        )
+        key_item_progress = update_discovered_indices(
+            self.discovered_key_item_ids,
+            self.read_key_item_ids(),
+            self.initial_key_item_ids,
+        )
+        ball_progress = update_discovered_indices(
+            self.discovered_ball_ids, self.read_ball_ids(), self.initial_ball_ids
+        )
+        return item_progress, key_item_progress, ball_progress
 
     def read_party_levels(self):
         return active_party_values(
