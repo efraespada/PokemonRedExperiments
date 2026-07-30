@@ -36,7 +36,7 @@ def build_env_config(args, output_dir):
     }
 
 
-def evaluate(env, model, episodes, seed):
+def evaluate(env, model, episodes, seed, deterministic=True):
     rng = np.random.default_rng(seed)
     results = []
     for episode in range(episodes):
@@ -47,7 +47,7 @@ def evaluate(env, model, episodes, seed):
             if model is None:
                 action = int(rng.integers(env.action_space.n))
             else:
-                action, _ = model.predict(obs, deterministic=True)
+                action, _ = model.predict(obs, deterministic=deterministic)
                 action = int(action)
             obs, reward, terminated, truncated, _ = env.step(action)
             total_reward += float(reward)
@@ -101,6 +101,11 @@ def parse_args():
     parser.add_argument("--episodes", type=int, default=5)
     parser.add_argument("--steps", type=int, default=4096)
     parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument(
+        "--stochastic",
+        action="store_true",
+        help="Sample from the PPO action distribution instead of taking its mode.",
+    )
     parser.add_argument("--action-freq", type=int, default=24)
     parser.add_argument("--rom", type=Path, default=REPO_ROOT / "PokemonPrism.gbc")
     parser.add_argument(
@@ -125,12 +130,19 @@ def main():
     env = PrismGymEnv(build_env_config(args, args.output.parent))
     try:
         model = PPO.load(args.checkpoint) if args.checkpoint else None
-        episodes = evaluate(env, model, args.episodes, args.seed)
+        episodes = evaluate(
+            env,
+            model,
+            args.episodes,
+            args.seed,
+            deterministic=not args.stochastic,
+        )
     finally:
         env.close()
 
     report = {
         "policy": str(args.checkpoint) if args.checkpoint else "random",
+        "deterministic": model is not None and not args.stochastic,
         "seed": args.seed,
         "episodes": episodes,
         "summary": summarize(episodes),
