@@ -177,16 +177,41 @@ def summarize(results):
 
 def success_rates(results):
     episode_count = len(results)
+
+    def rate(predicate):
+        return sum(predicate(episode) for episode in results) / episode_count
+
     return {
-        "battle": sum(episode["encounters"] > 0 for episode in results) / episode_count,
-        "victory": sum(episode["victories"] > 0 for episode in results)
-        / episode_count,
-        "battle_defeat": sum(episode["battle_defeats"] > 0 for episode in results)
-        / episode_count,
-        "map_transition": sum(episode["maps"] > 1 for episode in results)
-        / episode_count,
-        "death": sum(episode["deaths"] > 0 for episode in results)
-        / episode_count,
+        "battle": rate(lambda episode: episode["encounters"] > 0),
+        "victory": rate(lambda episode: episode["victories"] > 0),
+        "battle_defeat": rate(lambda episode: episode["battle_defeats"] > 0),
+        "map_transition": rate(lambda episode: episode["maps"] > 1),
+        "pokedex_seen": rate(
+            lambda episode: episode.get("pokedex_seen_progress", 0) > 0
+        ),
+        "capture": rate(
+            lambda episode: episode.get("pokedex_caught_progress", 0) > 0
+        ),
+        "story_event": rate(lambda episode: episode.get("event_progress", 0) > 0),
+        "item_acquisition": rate(
+            lambda episode: episode.get("item_progress", 0) > 0
+        ),
+        "key_item_acquisition": rate(
+            lambda episode: episode.get("key_item_progress", 0) > 0
+        ),
+        "ball_acquisition": rate(
+            lambda episode: episode.get("ball_progress", 0) > 0
+        ),
+        "badge_acquisition": rate(
+            lambda episode: episode.get("badge_progress", 0) > 0
+        ),
+        "party_growth": rate(
+            lambda episode: episode.get("party_species_progress", 0) > 0
+        ),
+        "experience_gain": rate(
+            lambda episode: episode.get("experience_gained", 0) > 0
+        ),
+        "death": rate(lambda episode: episode["deaths"] > 0),
     }
 
 

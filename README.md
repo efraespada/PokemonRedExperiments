@@ -110,7 +110,9 @@ python prism_evaluate.py --checkpoint runs_prism/navigation.zip \
 python prism_evaluate.py --seed 0
 ```
 Both commands write machine-readable episode metrics to
-`prism_evaluation.json`; use `--output` to preserve multiple reports.
+`prism_evaluation.json`; use `--output` to preserve multiple reports. Success
+rates distinguish navigation, combat, Pokédex discoveries, captures, story
+events, inventory acquisitions, party growth, experience gain, and badges.
 
 Run the hierarchical agent interactively (or headless for a smoke test):
 
