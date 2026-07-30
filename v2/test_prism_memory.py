@@ -34,6 +34,7 @@ from prism_memory import (
     read_item_pocket,
     read_bit_counts,
     read_set_bit_indices,
+    update_discovered_indices,
 )
 
 
@@ -128,6 +129,19 @@ class PrismMemoryTest(unittest.TestCase):
             read_bit_counts(memory.__getitem__, (0x1000, 0x1001, 0x1002)),
             (3, 4, 0),
         )
+
+    def test_update_discovered_indices_is_monotonic_and_ignores_initial(self):
+        discovered = set()
+        initial = frozenset({1, 4})
+        self.assertEqual(
+            update_discovered_indices(discovered, frozenset({1, 4, 7}), initial),
+            1,
+        )
+        self.assertEqual(
+            update_discovered_indices(discovered, frozenset({1, 4, 9}), initial),
+            2,
+        )
+        self.assertEqual(discovered, {7, 9})
 
 
 if __name__ == "__main__":

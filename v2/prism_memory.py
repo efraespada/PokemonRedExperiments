@@ -85,6 +85,11 @@ def read_bit_counts(read_byte, addresses):
     return tuple(int(read_byte(address)).bit_count() for address in addresses)
 
 
+def update_discovered_indices(discovered, current, initial):
+    discovered.update(set(current) - set(initial))
+    return len(discovered)
+
+
 def count_bits(read_byte, start, length):
     return sum(int(read_byte(start + offset)).bit_count() for offset in range(length))
 

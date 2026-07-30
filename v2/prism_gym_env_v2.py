@@ -40,12 +40,12 @@ from prism_memory import (
     PRISM_WRAM_BANK,
     active_party_values,
     classify_battle_outcome,
-    count_bits,
     read_u16_be,
     read_u24_be,
     read_item_pocket,
     read_bit_counts,
     read_set_bit_indices,
+    update_discovered_indices,
 )
 
 
@@ -186,6 +186,10 @@ class PrismGymEnv(Env):
         self.initial_event_flags = self.read_event_flags()
         self.discovered_event_flags = set()
         self.current_event_flags_set = {}
+        self.initial_pokedex_seen = self.read_pokedex_seen()
+        self.initial_pokedex_caught = self.read_pokedex_caught()
+        self.discovered_pokedex_seen = set()
+        self.discovered_pokedex_caught = set()
         self.screen_explore_count = 0
         self.coord_explore_count = 0
         self.stuck_penalty_count = 0
@@ -279,6 +283,7 @@ class PrismGymEnv(Env):
         x_pos, y_pos, map_n = self.get_game_coords()
         levels = self.read_party_levels()
         pokedex_seen, pokedex_caught = self.get_pokedex_counts()
+        pokedex_seen_progress, pokedex_caught_progress = self.get_pokedex_progress()
         items = self.read_items()
         key_items = self.read_key_items()
         balls = self.read_balls()
@@ -317,6 +322,8 @@ class PrismGymEnv(Env):
                 "badges_other": other_badges,
                 "pokedex_seen": pokedex_seen,
                 "pokedex_caught": pokedex_caught,
+                "pokedex_seen_progress": pokedex_seen_progress,
+                "pokedex_caught_progress": pokedex_caught_progress,
                 "event_count": self.read_event_count(),
                 "event_progress": self.get_event_progress(),
                 "item_slots": len(items),
@@ -539,8 +546,29 @@ class PrismGymEnv(Env):
         return self.read_m(self.party_count_addr)
 
     def get_pokedex_counts(self):
-        caught = count_bits(self.read_m, self.pokedex_caught_addr, self.pokedex_bytes)
-        seen = count_bits(self.read_m, self.pokedex_seen_addr, self.pokedex_bytes)
+        return len(self.read_pokedex_seen()), len(self.read_pokedex_caught())
+
+    def read_pokedex_seen(self):
+        return read_set_bit_indices(
+            self.read_m, self.pokedex_seen_addr, self.pokedex_bytes
+        )
+
+    def read_pokedex_caught(self):
+        return read_set_bit_indices(
+            self.read_m, self.pokedex_caught_addr, self.pokedex_bytes
+        )
+
+    def get_pokedex_progress(self):
+        seen = update_discovered_indices(
+            self.discovered_pokedex_seen,
+            self.read_pokedex_seen(),
+            self.initial_pokedex_seen,
+        )
+        caught = update_discovered_indices(
+            self.discovered_pokedex_caught,
+            self.read_pokedex_caught(),
+            self.initial_pokedex_caught,
+        )
         return seen, caught
 
     def read_event_count(self):
@@ -595,7 +623,7 @@ class PrismGymEnv(Env):
         return max(0, self.max_experience - self.initial_experience)
 
     def get_game_state_reward(self):
-        pokedex_seen, pokedex_caught = self.get_pokedex_counts()
+        pokedex_seen, pokedex_caught = self.get_pokedex_progress()
         self.max_level_sum = max(self.max_level_sum, self.read_level_sum())
         return {
             "screen": self.reward_scale
