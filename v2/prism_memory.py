@@ -94,6 +94,11 @@ def update_discovered_indices(discovered, current, initial):
     return len(discovered)
 
 
+def monotonic_progress(current, initial, previous_max):
+    new_max = max(int(current), int(previous_max))
+    return new_max, max(0, new_max - int(initial))
+
+
 def count_bits(read_byte, start, length):
     return sum(int(read_byte(start + offset)).bit_count() for offset in range(length))
 

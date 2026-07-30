@@ -30,6 +30,7 @@ from prism_memory import (
     active_party_values,
     classify_battle_outcome,
     count_bits,
+    monotonic_progress,
     read_u16_be,
     read_u24_be,
     read_item_pocket,
@@ -144,6 +145,14 @@ class PrismMemoryTest(unittest.TestCase):
             2,
         )
         self.assertEqual(discovered, {7, 9})
+
+    def test_monotonic_progress_ignores_initial_and_does_not_regress(self):
+        maximum, progress = monotonic_progress(4, initial=3, previous_max=3)
+        self.assertEqual((maximum, progress), (4, 1))
+        self.assertEqual(
+            monotonic_progress(2, initial=3, previous_max=maximum),
+            (4, 1),
+        )
 
 
 if __name__ == "__main__":

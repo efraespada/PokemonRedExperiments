@@ -46,6 +46,7 @@ from prism_memory import (
     read_item_pocket,
     read_bit_counts,
     read_set_bit_indices,
+    monotonic_progress,
     update_discovered_indices,
 )
 
@@ -192,6 +193,8 @@ class PrismGymEnv(Env):
         self.initial_pokedex_caught = self.read_pokedex_caught()
         self.discovered_pokedex_seen = set()
         self.discovered_pokedex_caught = set()
+        self.initial_badges = self.get_badges()
+        self.max_badges = self.initial_badges
         self.screen_explore_count = 0
         self.coord_explore_count = 0
         self.stuck_penalty_count = 0
@@ -321,6 +324,7 @@ class PrismGymEnv(Env):
                 "screen_count": len(self.seen_screen_hashes),
                 "deaths": self.died_count,
                 "badge": self.get_badges(),
+                "badge_progress": self.get_badge_progress(),
                 "badges_naljo": naljo_badges,
                 "badges_rijon": rijon_badges,
                 "badges_other": other_badges,
@@ -544,6 +548,12 @@ class PrismGymEnv(Env):
         counts = read_bit_counts(self.read_m, self.badge_addrs)
         return tuple((*counts, 0, 0, 0)[:3])
 
+    def get_badge_progress(self):
+        self.max_badges, progress = monotonic_progress(
+            self.get_badges(), self.initial_badges, self.max_badges
+        )
+        return progress
+
     def read_party_count(self):
         if self.party_count_addr is None:
             return 0
@@ -644,7 +654,7 @@ class PrismGymEnv(Env):
             "map": self.reward_scale
             * self.map_explore_weight
             * max(0, len(self.seen_maps) - 1),
-            "badge": self.reward_scale * self.get_badges() * 5,
+            "badge": self.reward_scale * self.get_badge_progress() * 5,
             "pokedex_seen": self.reward_scale
             * self.pokedex_seen_weight
             * pokedex_seen,

@@ -59,7 +59,9 @@ evento nuevo aunque después sea temporalmente desactivado.
 El progreso de Pokédex aplica el mismo criterio: vistos y capturados iniciales
 no generan recompensa, y cada especie nueva cuenta una sola vez por episodio.
 Las medallas se reportan tanto como total como separadas por Naljo, Rijon y el
-tercer grupo, facilitando validar cada transición regional.
+tercer grupo, facilitando validar cada transición regional. La recompensa usa
+solo las medallas nuevas respecto al estado inicial y conserva el máximo del
+episodio.
 
 Nuevo checkpoint útil:
 
