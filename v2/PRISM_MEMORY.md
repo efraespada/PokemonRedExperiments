@@ -49,6 +49,27 @@ cd v2
 python prism_memory_diff.py ../memory/base.npz ../memory/after_a.npz --output ../memory/base_vs_after_a.json
 ```
 
+Generar estados intermedios reproducibles del onboarding:
+
+```bash
+cd v2
+python prism_bootstrap.py --rom ../PokemonPrism.gbc --preset title
+python prism_bootstrap.py --rom ../PokemonPrism.gbc --preset new_game_menu
+python prism_bootstrap.py --rom ../PokemonPrism.gbc --preset calendar
+python prism_bootstrap.py --rom ../PokemonPrism.gbc --preset intro_text
+```
+
+Esto crea `.state`, `.png` y `.json` para cada checkpoint bajo `bootstrap_states/`.
+
+Checkpoints útiles ya verificados:
+
+- `title`: pantalla de título de Prism
+- `new_game_menu`: menú `Nueva Partida / Ajustes`
+- `calendar`: selección de fecha/hora
+- `intro_text`: confirmación `¿Es correcto?`
+- `name_selection`: lista de nombres prefijados
+- `name_adam`: intro ya continuada con el nombre `Adam`
+
 ## Siguiente objetivo
 
 Crear o capturar un `state` ya dentro de gameplay o menú para validar bytes de:
