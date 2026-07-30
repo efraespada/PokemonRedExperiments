@@ -102,6 +102,8 @@ baseline:
 ```bash
 python prism_evaluate.py --checkpoint runs_prism/prism_4096_steps.zip
 python prism_evaluate.py --checkpoint runs_prism/prism_4096_steps.zip --stochastic
+python prism_evaluate.py --checkpoint runs_prism/navigation.zip \
+  --battle-checkpoint runs_prism/battle.zip --stochastic
 python prism_evaluate.py --seed 0
 ```
 Both commands write machine-readable episode metrics to

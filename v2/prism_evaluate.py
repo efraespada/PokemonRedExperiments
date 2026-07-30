@@ -40,7 +40,7 @@ def build_env_config(args, output_dir):
     }
 
 
-def evaluate(env, model, episodes, seed, deterministic=True):
+def evaluate(env, model, episodes, seed, deterministic=True, battle_model=None):
     rng = np.random.default_rng(seed)
     results = []
     for episode in range(episodes):
@@ -48,13 +48,20 @@ def evaluate(env, model, episodes, seed, deterministic=True):
         obs, _ = env.reset(seed=episode_seed)
         if model is not None:
             model.set_random_seed(episode_seed)
+        if battle_model is not None:
+            battle_model.set_random_seed(episode_seed)
         total_reward = 0.0
         terminated = truncated = False
         while not (terminated or truncated):
             if model is None:
                 action = int(rng.integers(env.action_space.n))
             else:
-                action, _ = model.predict(obs, deterministic=deterministic)
+                active_model = (
+                    battle_model
+                    if battle_model is not None and env.is_in_battle()
+                    else model
+                )
+                action, _ = active_model.predict(obs, deterministic=deterministic)
                 action = int(action)
             obs, reward, terminated, truncated, _ = env.step(action)
             total_reward += float(reward)
@@ -142,6 +149,11 @@ def parse_args():
         description="Evaluate a Prism PPO checkpoint or a random-policy baseline."
     )
     parser.add_argument("--checkpoint", type=Path)
+    parser.add_argument(
+        "--battle-checkpoint",
+        type=Path,
+        help="Optional specialist policy used whenever Prism is in battle.",
+    )
     parser.add_argument("--episodes", type=int, default=5)
     parser.add_argument("--steps", type=int, default=4096)
     parser.add_argument("--seed", type=int, default=0)
@@ -174,18 +186,27 @@ def main():
     env = PrismGymEnv(build_env_config(args, args.output.parent))
     try:
         model = PPO.load(args.checkpoint) if args.checkpoint else None
+        battle_model = (
+            PPO.load(args.battle_checkpoint) if args.battle_checkpoint else None
+        )
+        if battle_model is not None and model is None:
+            raise ValueError("--battle-checkpoint requires --checkpoint")
         episodes = evaluate(
             env,
             model,
             args.episodes,
             args.seed,
             deterministic=not args.stochastic,
+            battle_model=battle_model,
         )
     finally:
         env.close()
 
     report = {
         "policy": str(args.checkpoint) if args.checkpoint else "random",
+        "battle_policy": (
+            str(args.battle_checkpoint) if args.battle_checkpoint else None
+        ),
         "deterministic": model is not None and not args.stochastic,
         "seed": args.seed,
         "episodes": episodes,
