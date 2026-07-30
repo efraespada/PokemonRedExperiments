@@ -103,6 +103,8 @@ Larvitar in the party. `larvitar_accept_adam` stops one confirmation before
 Larvitar joins the party, providing the smallest acquisition microtask.
 `larvitar_nearby_adam` adds five movement actions before the offer, bridging
 dialogue training into navigation.
+`larvitar_route_adam` extends that bridge to ten movement actions before the
+offer for the next curriculum stage.
 Focused navigation curricula can set `PRISM_TARGET_COORDS` as
 `map_group,map_number,x,y`. The optional monotonic target reward is disabled
 when that variable is absent, so general training remains unaffected.
