@@ -4,6 +4,7 @@ from os.path import exists
 from pathlib import Path
 
 from prism_gym_env_v2 import PrismGymEnv
+from prism_memory import parse_coordinate_sequence
 from prism_training_manifest import (
     finish_training_manifest,
     start_training_manifest,
@@ -55,16 +56,13 @@ if __name__ == "__main__":
     if missing_states:
         raise FileNotFoundError(f"Prism curriculum states not found: {missing_states}")
 
-    target_coords_value = os.getenv("PRISM_TARGET_COORDS")
-    target_coords = (
-        tuple(int(value) for value in target_coords_value.split(","))
-        if target_coords_value
-        else None
+    target_waypoints = parse_coordinate_sequence(
+        os.getenv("PRISM_TARGET_WAYPOINTS")
     )
-    if target_coords is not None and len(target_coords) != 4:
-        raise ValueError(
-            "PRISM_TARGET_COORDS must be map_group,map_number,x,y"
-        )
+    target_coords = next(
+        iter(parse_coordinate_sequence(os.getenv("PRISM_TARGET_COORDS"))),
+        None,
+    )
 
     env_config = {
         "headless": True,
@@ -98,6 +96,7 @@ if __name__ == "__main__":
             os.getenv("PRISM_INTERACTION_WEIGHT", "0.25")
         ),
         "target_coords": target_coords,
+        "target_waypoints": target_waypoints,
         "target_weight": float(os.getenv("PRISM_TARGET_WEIGHT", "1.0")),
         "level_weight": 0.5,
         "heal_weight": 0.25,

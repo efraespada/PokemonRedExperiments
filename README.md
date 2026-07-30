@@ -109,6 +109,9 @@ offer for the next curriculum stage.
 Focused navigation curricula can set `PRISM_TARGET_COORDS` as
 `map_group,map_number,x,y`. The optional monotonic target reward is disabled
 when that variable is absent, so general training remains unaffected.
+Routes with obstacles can instead set `PRISM_TARGET_WAYPOINTS` to a
+semicolon-separated sequence of those coordinates. Each waypoint must be
+reached in order before reward progress continues toward the next one.
 
 For curriculum training, `PRISM_INIT_STATES` accepts a comma-separated list of
 local PyBoy states. The environment samples one state reproducibly per reset,

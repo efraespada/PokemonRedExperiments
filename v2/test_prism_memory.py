@@ -34,6 +34,7 @@ from prism_memory import (
     earned_experience_delta,
     is_productive_interaction,
     monotonic_progress,
+    parse_coordinate_sequence,
     read_u16_be,
     read_u24_be,
     read_item_pocket,
@@ -198,6 +199,15 @@ class PrismMemoryTest(unittest.TestCase):
         self.assertIsNone(
             coordinate_distance((31, 2, 34, 18), (31, 1, 33, 17))
         )
+
+    def test_parse_coordinate_sequence(self):
+        self.assertEqual(
+            parse_coordinate_sequence("31,1,23,34;31,1,33,17"),
+            ((31, 1, 23, 34), (31, 1, 33, 17)),
+        )
+        self.assertEqual(parse_coordinate_sequence(None), ())
+        with self.assertRaises(ValueError):
+            parse_coordinate_sequence("31,1,23")
 
 
 if __name__ == "__main__":

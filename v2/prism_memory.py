@@ -139,6 +139,21 @@ def coordinate_distance(current, target):
     return abs(current_x - target_x) + abs(current_y - target_y)
 
 
+def parse_coordinate_sequence(value):
+    if not value:
+        return ()
+    coordinates = tuple(
+        tuple(int(component) for component in waypoint.split(","))
+        for waypoint in value.split(";")
+        if waypoint.strip()
+    )
+    if any(len(waypoint) != 4 for waypoint in coordinates):
+        raise ValueError(
+            "coordinate sequence must use map_group,map_number,x,y entries"
+        )
+    return coordinates
+
+
 def count_bits(read_byte, start, length):
     return sum(int(read_byte(start + offset)).bit_count() for offset in range(length))
 

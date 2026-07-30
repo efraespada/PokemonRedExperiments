@@ -80,6 +80,10 @@ class PrismGymEnv(Env):
         self.interaction_weight = config.get("interaction_weight", 0.25)
         self.target_weight = config.get("target_weight", 1.0)
         self.target_coords = config.get("target_coords")
+        configured_waypoints = tuple(config.get("target_waypoints") or ())
+        self.target_waypoints = configured_waypoints or (
+            (self.target_coords,) if self.target_coords is not None else ()
+        )
         self.level_weight = config.get("level_weight", 0.5)
         self.heal_weight = config.get("heal_weight", 0.25)
         self.death_penalty_weight = config.get("death_penalty_weight", 5.0)
@@ -211,8 +215,11 @@ class PrismGymEnv(Env):
         self.discovered_party_species = set()
         self.screen_explore_count = 0
         self.interaction_count = 0
+        self.target_waypoint_index = 0
+        self.completed_target_progress = 0
         self.initial_target_distance = self.read_target_distance()
         self.min_target_distance = self.initial_target_distance
+        self.update_target_progress()
         self.coord_explore_count = 0
         self.stuck_penalty_count = 0
         self.last_health = self.read_hp_fraction()
@@ -507,20 +514,41 @@ class PrismGymEnv(Env):
         return int(self.seen_coords.get(self.coord_key(), 0) >= self.stuck_threshold)
 
     def read_target_distance(self):
-        if self.target_coords is None:
+        if self.target_waypoint_index >= len(self.target_waypoints):
             return None
-        return coordinate_distance(self.coord_key(), self.target_coords)
+        return coordinate_distance(
+            self.coord_key(),
+            self.target_waypoints[self.target_waypoint_index],
+        )
 
     def get_target_distance(self):
         distance = self.read_target_distance()
+        if distance is None and self.target_waypoints:
+            return 0
         return -1 if distance is None else distance
 
-    def get_target_progress(self):
+    def update_target_progress(self):
         distance = self.read_target_distance()
-        if distance is None or self.initial_target_distance is None:
-            return 0
+        if distance is None:
+            return
+        if self.initial_target_distance is None:
+            self.initial_target_distance = distance
+            self.min_target_distance = distance
         self.min_target_distance = min(self.min_target_distance, distance)
-        return self.initial_target_distance - self.min_target_distance
+        if distance != 0:
+            return
+        self.completed_target_progress += self.initial_target_distance
+        self.target_waypoint_index += 1
+        self.initial_target_distance = self.read_target_distance()
+        self.min_target_distance = self.initial_target_distance
+        self.update_target_progress()
+
+    def get_target_progress(self):
+        self.update_target_progress()
+        segment_progress = 0
+        if self.initial_target_distance is not None:
+            segment_progress = self.initial_target_distance - self.min_target_distance
+        return self.completed_target_progress + segment_progress
 
     def update_explore_map(self):
         self.explore_map = self.render_local_explore_map()
