@@ -75,14 +75,15 @@ Suggested setup:
 
 1. Place your legally obtained Prism ROM at the repo root as `PokemonPrism.gbc`.
 2. Move into `v2/`.
-3. Generate a reproducible state at the first playable overworld scene:
-```python prism_bootstrap.py --rom ../PokemonPrism.gbc --preset map_ready_adam```
+3. Generate a reproducible training state with the first Larvitar:
+```python prism_bootstrap.py --rom ../PokemonPrism.gbc --preset larvitar_ready_adam```
 4. Train with:
 ```python baseline_fast_prism_v2.py```
 
-The trainer uses `bootstrap_states/map_ready_adam.state` by default, avoiding the
-title screen and onboarding dialogue. You can override the ROM and state paths
-with `PRISM_ROM` and `PRISM_INIT_STATE`.
+The trainer uses `bootstrap_states/larvitar_ready_adam.state` by default,
+avoiding the title screen and onboarding dialogue and starting with the first
+Larvitar in the party. You can override the ROM and state paths with `PRISM_ROM`
+and `PRISM_INIT_STATE`.
 
 Notes:
 - `prism_init.state` is intentionally not committed because it is generated from your ROM.

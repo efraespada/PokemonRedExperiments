@@ -2,6 +2,7 @@ import unittest
 
 from prism_memory import (
     BADGES,
+    BATTLE_MODE,
     PARTY_COUNT,
     PARTY_HP,
     PARTY_LEVELS,
@@ -21,6 +22,7 @@ class PrismMemoryTest(unittest.TestCase):
         self.assertEqual(POKEDEX_CAUGHT, 0xDE99)
         self.assertEqual(POKEDEX_SEEN, 0xDEB9)
         self.assertEqual(BADGES, (0xDED9, 0xDEDA, 0xDEDB))
+        self.assertEqual(BATTLE_MODE, 0xD22D)
 
     def test_count_bits(self):
         memory = {0x1000: 0b10100001, 0x1001: 0b11110000}

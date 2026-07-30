@@ -13,6 +13,7 @@ from skimage.transform import downscale_local_mean
 
 from prism_memory import (
     BADGES,
+    BATTLE_MODE,
     PARTY_COUNT,
     PARTY_HP,
     PARTY_LEVELS,
@@ -52,7 +53,7 @@ class PrismGymEnv(Env):
                 "y": 0xDCB7,
                 "map": 0xDCB6,
                 "map_group": 0xDCB5,
-                "battle": 0xD057,
+                "battle": BATTLE_MODE,
             },
         )
         self.level_addrs = config.get("level_addrs", PARTY_LEVELS)

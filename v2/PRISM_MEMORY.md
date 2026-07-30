@@ -29,6 +29,7 @@ Estado actual del trabajo de memoria para `Prism`.
 - `0xDED9`: medallas de Naljo
 - `0xDEDA`: medallas de Rijon
 - `0xDEDB`: otras medallas
+- `0xD22D`: modo de batalla
 
 Estas direcciones están centralizadas en `prism_memory.py`. El entorno expone
 los contadores de Pokédex en la observación y en TensorBoard, y los incorpora a
@@ -96,9 +97,21 @@ Checkpoints útiles ya verificados:
 - `name_adam`: intro ya continuada con el nombre `Adam`
 - `map_ready_adam`: primer estado confirmado en overworld, sin diálogo abierto,
   tras elegir `Adam`
+- `larvitar_ready_adam`: estado en `AcquaStart` tras aceptar al primer Larvitar
+  y cerrar su diálogo
 
-El entrenamiento usa `bootstrap_states/map_ready_adam.state` por defecto. Esto
-evita gastar episodios en el título y el onboarding. Se puede seleccionar otro
+Validación dinámica en `larvitar_ready_adam`:
+
+- equipo: `0 -> 1`
+- primer nivel: `5`
+- primer HP actual/máximo: `20/20`
+- Pokédex vistos: `0 -> 1`
+- Pokédex capturados: `0 -> 1`
+- medallas: `0`
+
+El entrenamiento usa `bootstrap_states/larvitar_ready_adam.state` por defecto.
+Esto evita gastar episodios en el título y el onboarding y permite entrenar con
+estadísticas reales de equipo desde el primer paso. Se puede seleccionar otro
 checkpoint mediante `PRISM_INIT_STATE`; la ROM también se puede seleccionar con
 `PRISM_ROM`.
 

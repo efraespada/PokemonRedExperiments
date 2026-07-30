@@ -33,14 +33,14 @@ if __name__ == "__main__":
     init_state = Path(
         os.getenv(
             "PRISM_INIT_STATE",
-            REPO_ROOT / "v2/bootstrap_states/map_ready_adam.state",
+            REPO_ROOT / "v2/bootstrap_states/larvitar_ready_adam.state",
         )
     )
     if not init_state.is_file():
         raise FileNotFoundError(
             f"Playable Prism state not found at {init_state}. "
             "Generate it with: python prism_bootstrap.py --rom ../PokemonPrism.gbc "
-            "--preset map_ready_adam"
+            "--preset larvitar_ready_adam"
         )
 
     env_config = {
