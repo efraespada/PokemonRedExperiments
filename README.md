@@ -92,6 +92,9 @@ screen changes, use four PPO optimization epochs, and can be tuned with the
 `PRISM_*` environment variables in `baseline_fast_prism_v2.py`. Resumed models
 reapply those optimizer settings, and `PRISM_CHECKPOINT_FREQ` controls how often
 intermediate policies are preserved for evaluation.
+Each run also writes `training_manifest.json` in its session directory with the
+seed, hyperparameters, curriculum states, requested steps, duration, completion
+status, resume source, and generated checkpoints.
 
 For curriculum training, `PRISM_INIT_STATES` accepts a comma-separated list of
 local PyBoy states. The environment samples one state reproducibly per reset,

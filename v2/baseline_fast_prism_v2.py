@@ -4,6 +4,10 @@ from os.path import exists
 from pathlib import Path
 
 from prism_gym_env_v2 import PrismGymEnv
+from prism_training_manifest import (
+    finish_training_manifest,
+    start_training_manifest,
+)
 from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import CallbackList, CheckpointCallback
 from stable_baselines3.common.utils import set_random_seed
@@ -163,8 +167,47 @@ if __name__ == "__main__":
         os.getenv("PRISM_TOTAL_TIMESTEPS", (ep_length) * num_cpu * 10000)
     )
 
-    model.learn(
-        total_timesteps=total_timesteps,
-        callback=CallbackList(callbacks),
-        tb_log_name="prism_ppo",
+    manifest_path = sess_path / "training_manifest.json"
+    manifest, started_monotonic = start_training_manifest(
+        manifest_path,
+        {
+            "seed": seed,
+            "total_timesteps": total_timesteps,
+            "episode_length": ep_length,
+            "num_environments": num_cpu,
+            "vector_environment": vec_env,
+            "rollout_steps": train_steps_batch,
+            "batch_size": batch_size,
+            "epochs": n_epochs,
+            "learning_rate": learning_rate,
+            "entropy_coefficient": ent_coef,
+            "checkpoint_frequency": checkpoint_freq,
+            "resumed_from": file_name or None,
+            "rom": env_config["gb_path"],
+            "initial_states": list(env_config["init_states"]),
+        },
     )
+    try:
+        model.learn(
+            total_timesteps=total_timesteps,
+            callback=CallbackList(callbacks),
+            tb_log_name="prism_ppo",
+        )
+    except BaseException as error:
+        finish_training_manifest(
+            manifest_path,
+            manifest,
+            started_monotonic,
+            "failed",
+            checkpoints=sorted(sess_path.glob("prism_*_steps.zip")),
+            error=error,
+        )
+        raise
+    else:
+        finish_training_manifest(
+            manifest_path,
+            manifest,
+            started_monotonic,
+            "completed",
+            checkpoints=sorted(sess_path.glob("prism_*_steps.zip")),
+        )
