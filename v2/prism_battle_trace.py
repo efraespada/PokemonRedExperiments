@@ -90,6 +90,8 @@ def main():
                     after_ranges,
                     {**common, "side": "after", "memory": after_summary},
                 )
+                with open(args.output_dir / f"{prefix}_after.state", "wb") as state_file:
+                    env.pyboy.save_state(state_file)
                 transitions.append(common)
             before_ranges, before_summary = snapshot(env)
             was_in_battle = in_battle

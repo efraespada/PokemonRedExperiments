@@ -91,6 +91,9 @@ python prism_battle_trace.py \
   --steps 4096 --seed 41
 ```
 
+Además de `.npz` y `.json`, el trazador guarda un `.state` reproducible después
+de cada transición para crear currículos de combate locales.
+
 Generar estados intermedios reproducibles del onboarding:
 
 ```bash
