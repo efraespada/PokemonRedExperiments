@@ -85,7 +85,9 @@ avoiding the title screen and onboarding dialogue and starting with the first
 Larvitar in the party. You can override the ROM and state paths with `PRISM_ROM`
 and `PRISM_INIT_STATE`. Restricted environments that cannot create subprocesses
 can use `PRISM_VEC_ENV=dummy PRISM_NUM_CPU=1`; normal training uses the faster
-`subproc` vector environment by default.
+`subproc` vector environment by default. Short experimental episodes should set
+`PRISM_N_STEPS` explicitly (for example, `256`) so PPO does not learn from tiny
+rollout batches.
 
 Evaluate a checkpoint deterministically and compare it with a seeded random
 baseline:

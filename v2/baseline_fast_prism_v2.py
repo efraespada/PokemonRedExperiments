@@ -91,7 +91,9 @@ if __name__ == "__main__":
     else:
         file_name = sys.stdin.read().strip()
 
-    train_steps_batch = ep_length // 64
+    train_steps_batch = int(os.getenv("PRISM_N_STEPS", ep_length // 64))
+    if train_steps_batch < 2:
+        raise ValueError("PRISM_N_STEPS must be at least 2")
 
     batch_size = int(
         os.getenv("PRISM_BATCH_SIZE", min(512, train_steps_batch * num_cpu))
