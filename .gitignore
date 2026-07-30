@@ -14,6 +14,11 @@ venv*
 .python-version
 .venv/
 PokemonPrism.gbc
+*.rtc
 prism_init.state
 v2/session_*
 v2/runs_prism/
+v2/runs_prism_bg/
+v2/memory/
+runs_prism_smoke/
+tmp_prism_*/

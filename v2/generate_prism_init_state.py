@@ -17,7 +17,7 @@ def main():
     parser.add_argument(
         "--ticks",
         type=int,
-        default=600,
+        default=1200,
         help="How many emulator ticks to advance before saving the state.",
     )
     args = parser.parse_args()

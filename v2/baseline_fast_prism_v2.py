@@ -1,4 +1,5 @@
 import sys
+import os
 from os.path import exists
 from pathlib import Path
 
@@ -21,8 +22,8 @@ def make_env(rank, env_conf, seed=0):
 
 
 if __name__ == "__main__":
-    ep_length = 2048 * 80
-    sess_id = "runs_prism"
+    ep_length = int(os.getenv("PRISM_EP_LENGTH", 2048 * 80))
+    sess_id = os.getenv("PRISM_SESSION_DIR", "runs_prism")
     sess_path = Path(sess_id)
 
     env_config = {
@@ -44,7 +45,7 @@ if __name__ == "__main__":
 
     print(env_config)
 
-    num_cpu = 8
+    num_cpu = int(os.getenv("PRISM_NUM_CPU", 8))
     env = SubprocVecEnv([make_env(i, env_config) for i in range(num_cpu)])
 
     checkpoint_callback = CheckpointCallback(
@@ -58,6 +59,10 @@ if __name__ == "__main__":
         file_name = sys.stdin.read().strip()
 
     train_steps_batch = ep_length // 64
+
+    batch_size = int(
+        os.getenv("PRISM_BATCH_SIZE", min(512, train_steps_batch * num_cpu))
+    )
 
     if exists(file_name + ".zip"):
         print("\nloading checkpoint")
@@ -73,7 +78,7 @@ if __name__ == "__main__":
             env,
             verbose=1,
             n_steps=train_steps_batch,
-            batch_size=512,
+            batch_size=batch_size,
             n_epochs=1,
             gamma=0.997,
             ent_coef=0.01,
@@ -81,8 +86,12 @@ if __name__ == "__main__":
         )
 
     print(model.policy)
+    total_timesteps = int(
+        os.getenv("PRISM_TOTAL_TIMESTEPS", (ep_length) * num_cpu * 10000)
+    )
+
     model.learn(
-        total_timesteps=(ep_length) * num_cpu * 10000,
+        total_timesteps=total_timesteps,
         callback=CallbackList(callbacks),
         tb_log_name="prism_ppo",
     )
