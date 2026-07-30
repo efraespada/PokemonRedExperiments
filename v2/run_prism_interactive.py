@@ -1,74 +1,132 @@
-import glob
+import argparse
 import os
-import time
 import uuid
 from pathlib import Path
 
-from prism_gym_env_v2 import PrismGymEnv
 from stable_baselines3 import PPO
 
+from prism_gym_env_v2 import PrismGymEnv
 
-def get_most_recent_zip_with_age(folder_path):
-    zip_files = glob.glob(os.path.join(folder_path, "*.zip"))
-    if not zip_files:
-        return None, None
 
-    most_recent_zip = max(zip_files, key=os.path.getmtime)
-    current_time = time.time()
-    modification_time = os.path.getmtime(most_recent_zip)
-    age_in_hours = (current_time - modification_time) / 3600
-    return most_recent_zip, age_in_hours
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parent
+
+
+def select_policy(env, navigation_model, battle_model=None):
+    if battle_model is not None and env.is_in_battle():
+        return battle_model
+    return navigation_model
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Run a navigation policy with an optional Prism battle specialist."
+    )
+    parser.add_argument(
+        "--checkpoint",
+        type=Path,
+        default=os.getenv("PRISM_NAV_CHECKPOINT"),
+        required=os.getenv("PRISM_NAV_CHECKPOINT") is None,
+    )
+    parser.add_argument(
+        "--battle-checkpoint",
+        type=Path,
+        default=os.getenv("PRISM_BATTLE_CHECKPOINT"),
+    )
+    parser.add_argument(
+        "--rom",
+        type=Path,
+        default=Path(os.getenv("PRISM_ROM", REPO_ROOT / "PokemonPrism.gbc")),
+    )
+    parser.add_argument(
+        "--state",
+        type=Path,
+        default=Path(
+            os.getenv(
+                "PRISM_INIT_STATE",
+                SCRIPT_DIR / "bootstrap_states/larvitar_ready_adam.state",
+            )
+        ),
+    )
+    parser.add_argument("--max-steps", type=int, default=2**20)
+    parser.add_argument("--headless", action="store_true")
+    parser.add_argument("--always-on", action="store_true")
+    parser.add_argument("--deterministic", action="store_true")
+    return parser.parse_args()
+
+
+def main():
+    args = parse_args()
+    for label, path in (
+        ("ROM", args.rom),
+        ("state", args.state),
+        ("navigation checkpoint", args.checkpoint),
+    ):
+        if not path.is_file():
+            raise FileNotFoundError(f"Prism {label} not found: {path}")
+    if args.battle_checkpoint and not args.battle_checkpoint.is_file():
+        raise FileNotFoundError(
+            f"Prism battle checkpoint not found: {args.battle_checkpoint}"
+        )
+
+    session_path = SCRIPT_DIR / f"session_{str(uuid.uuid4())[:8]}"
+    env = PrismGymEnv(
+        {
+            "headless": args.headless,
+            "save_final_state": True,
+            "action_freq": 24,
+            "init_state": str(args.state),
+            "max_steps": args.max_steps,
+            "print_rewards": True,
+            "save_video": False,
+            "fast_video": True,
+            "session_path": session_path,
+            "gb_path": str(args.rom),
+            "reward_scale": 1.0,
+            "screen_explore_weight": 0.005,
+            "coord_explore_weight": 0.50,
+            "map_explore_weight": 5.0,
+            "pokedex_seen_weight": 1.0,
+            "pokedex_caught_weight": 2.0,
+            "opponent_weight": 5.0,
+            "experience_weight": 0.25,
+            "damage_weight": 5.0,
+            "death_penalty_weight": 5.0,
+            "stuck_penalty_weight": 0.05,
+        }
+    )
+    navigation_model = PPO.load(args.checkpoint)
+    battle_model = (
+        PPO.load(args.battle_checkpoint) if args.battle_checkpoint else None
+    )
+    print(f"navigation policy: {args.checkpoint}")
+    print(f"battle policy: {args.battle_checkpoint or 'navigation policy'}")
+
+    try:
+        obs, _ = env.reset()
+        truncated = False
+        while not truncated:
+            agent_enabled = args.always_on
+            if not agent_enabled:
+                try:
+                    agent_enabled = (
+                        SCRIPT_DIR / "agent_enabled.txt"
+                    ).read_text().startswith("yes")
+                except OSError:
+                    agent_enabled = False
+
+            if agent_enabled:
+                model = select_policy(env, navigation_model, battle_model)
+                action, _ = model.predict(obs, deterministic=args.deterministic)
+                obs, _, _, truncated, _ = env.step(int(action))
+            else:
+                env.pyboy.tick(1, True)
+                obs = env._get_obs()
+                truncated = env.step_count >= env.max_steps - 1
+            env.render()
+    finally:
+        env.close()
 
 
 if __name__ == "__main__":
-    sess_path = Path(f"session_{str(uuid.uuid4())[:8]}")
-    ep_length = 2**20
-
-    env_config = {
-        "headless": False,
-        "save_final_state": True,
-        "action_freq": 24,
-        "init_state": "../prism_init.state",
-        "max_steps": ep_length,
-        "print_rewards": True,
-        "save_video": False,
-        "fast_video": True,
-        "session_path": sess_path,
-        "gb_path": "../PokemonPrism.gbc",
-        "reward_scale": 1.0,
-        "screen_explore_weight": 0.05,
-        "coord_explore_weight": 0.10,
-        "stuck_penalty_weight": 0.05,
-    }
-
-    env = PrismGymEnv(env_config)
-    most_recent_checkpoint, time_since = get_most_recent_zip_with_age("runs_prism")
-    if most_recent_checkpoint is None:
-        raise FileNotFoundError("No se encontro ningun checkpoint en runs_prism/")
-
-    print(f"using checkpoint: {most_recent_checkpoint}, age: {time_since:.2f}h")
-    model = PPO.load(
-        most_recent_checkpoint, env=env, custom_objects={"lr_schedule": 0, "clip_range": 0}
-    )
-
-    obs, info = env.reset()
-    while True:
-        try:
-            with open("agent_enabled.txt", "r") as f:
-                agent_enabled = f.readlines()[0].startswith("yes")
-        except Exception:
-            agent_enabled = False
-
-        if agent_enabled:
-            action, _states = model.predict(obs, deterministic=False)
-            obs, rewards, terminated, truncated, info = env.step(action)
-        else:
-            env.pyboy.tick(1, True)
-            obs = env._get_obs()
-            truncated = env.step_count >= env.max_steps - 1
-
-        env.render()
-        if truncated:
-            break
-
-    env.close()
+    main()

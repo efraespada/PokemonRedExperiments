@@ -109,6 +109,17 @@ python prism_evaluate.py --seed 0
 Both commands write machine-readable episode metrics to
 `prism_evaluation.json`; use `--output` to preserve multiple reports.
 
+Run the hierarchical agent interactively (or headless for a smoke test):
+
+```bash
+python run_prism_interactive.py \
+  --checkpoint runs_prism/navigation.zip \
+  --battle-checkpoint runs_prism/battle.zip
+```
+
+Use `--always-on` to ignore `agent_enabled.txt`. The same paths can be provided
+through `PRISM_NAV_CHECKPOINT` and `PRISM_BATTLE_CHECKPOINT`.
+
 Notes:
 - `prism_init.state` is intentionally not committed because it is generated from your ROM.
 - Bootstrap states are also local, generated assets and are not committed.
