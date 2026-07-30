@@ -30,6 +30,7 @@ from prism_memory import (
     active_party_values,
     classify_battle_outcome,
     count_bits,
+    coordinate_distance,
     earned_experience_delta,
     is_productive_interaction,
     monotonic_progress,
@@ -187,6 +188,15 @@ class PrismMemoryTest(unittest.TestCase):
         )
         self.assertFalse(
             is_productive_interaction(4, (1, 2), (1, 2), True, 0.05, False)
+        )
+
+    def test_coordinate_distance_requires_matching_map(self):
+        self.assertEqual(
+            coordinate_distance((31, 1, 34, 18), (31, 1, 33, 17)),
+            2,
+        )
+        self.assertIsNone(
+            coordinate_distance((31, 2, 34, 18), (31, 1, 33, 17))
         )
 
 

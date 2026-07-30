@@ -131,6 +131,14 @@ def is_productive_interaction(
     )
 
 
+def coordinate_distance(current, target):
+    current_group, current_map, current_x, current_y = map(int, current)
+    target_group, target_map, target_x, target_y = map(int, target)
+    if (current_group, current_map) != (target_group, target_map):
+        return None
+    return abs(current_x - target_x) + abs(current_y - target_y)
+
+
 def count_bits(read_byte, start, length):
     return sum(int(read_byte(start + offset)).bit_count() for offset in range(length))
 

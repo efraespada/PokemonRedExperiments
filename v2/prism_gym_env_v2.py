@@ -41,6 +41,7 @@ from prism_memory import (
     PRISM_WRAM_BANK,
     active_party_values,
     classify_battle_outcome,
+    coordinate_distance,
     earned_experience_delta,
     is_productive_interaction,
     read_u16_be,
@@ -77,6 +78,8 @@ class PrismGymEnv(Env):
         self.pokedex_caught_weight = config.get("pokedex_caught_weight", 2.0)
         self.event_weight = config.get("event_weight", 1.0)
         self.interaction_weight = config.get("interaction_weight", 0.25)
+        self.target_weight = config.get("target_weight", 1.0)
+        self.target_coords = config.get("target_coords")
         self.level_weight = config.get("level_weight", 0.5)
         self.heal_weight = config.get("heal_weight", 0.25)
         self.death_penalty_weight = config.get("death_penalty_weight", 5.0)
@@ -208,6 +211,8 @@ class PrismGymEnv(Env):
         self.discovered_party_species = set()
         self.screen_explore_count = 0
         self.interaction_count = 0
+        self.initial_target_distance = self.read_target_distance()
+        self.min_target_distance = self.initial_target_distance
         self.coord_explore_count = 0
         self.stuck_penalty_count = 0
         self.last_health = self.read_hp_fraction()
@@ -352,6 +357,8 @@ class PrismGymEnv(Env):
                 "map_count": len(self.seen_maps),
                 "screen_count": len(self.seen_screen_hashes),
                 "interactions": self.interaction_count,
+                "target_distance": self.get_target_distance(),
+                "target_progress": self.get_target_progress(),
                 "deaths": self.died_count,
                 "badge": self.get_badges(),
                 "badge_progress": self.get_badge_progress(),
@@ -498,6 +505,22 @@ class PrismGymEnv(Env):
 
     def get_current_coord_count_reward(self):
         return int(self.seen_coords.get(self.coord_key(), 0) >= self.stuck_threshold)
+
+    def read_target_distance(self):
+        if self.target_coords is None:
+            return None
+        return coordinate_distance(self.coord_key(), self.target_coords)
+
+    def get_target_distance(self):
+        distance = self.read_target_distance()
+        return -1 if distance is None else distance
+
+    def get_target_progress(self):
+        distance = self.read_target_distance()
+        if distance is None or self.initial_target_distance is None:
+            return 0
+        self.min_target_distance = min(self.min_target_distance, distance)
+        return self.initial_target_distance - self.min_target_distance
 
     def update_explore_map(self):
         self.explore_map = self.render_local_explore_map()
@@ -742,6 +765,9 @@ class PrismGymEnv(Env):
             "interaction": self.reward_scale
             * self.interaction_weight
             * self.interaction_count,
+            "target": self.reward_scale
+            * self.target_weight
+            * self.get_target_progress(),
             "level": self.reward_scale * self.level_weight * self.max_level_sum,
             "heal": self.reward_scale * self.heal_weight * self.total_healing,
             "death": self.reward_scale

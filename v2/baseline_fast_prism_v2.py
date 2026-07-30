@@ -55,6 +55,17 @@ if __name__ == "__main__":
     if missing_states:
         raise FileNotFoundError(f"Prism curriculum states not found: {missing_states}")
 
+    target_coords_value = os.getenv("PRISM_TARGET_COORDS")
+    target_coords = (
+        tuple(int(value) for value in target_coords_value.split(","))
+        if target_coords_value
+        else None
+    )
+    if target_coords is not None and len(target_coords) != 4:
+        raise ValueError(
+            "PRISM_TARGET_COORDS must be map_group,map_number,x,y"
+        )
+
     env_config = {
         "headless": True,
         "save_final_state": False,
@@ -86,6 +97,8 @@ if __name__ == "__main__":
         "interaction_weight": float(
             os.getenv("PRISM_INTERACTION_WEIGHT", "0.25")
         ),
+        "target_coords": target_coords,
+        "target_weight": float(os.getenv("PRISM_TARGET_WEIGHT", "1.0")),
         "level_weight": 0.5,
         "heal_weight": 0.25,
         "death_penalty_weight": float(
