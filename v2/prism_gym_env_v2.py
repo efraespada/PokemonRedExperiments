@@ -21,7 +21,9 @@ from prism_memory import (
     POKEDEX_BYTES,
     POKEDEX_CAUGHT,
     POKEDEX_SEEN,
+    active_party_values,
     count_bits,
+    read_u16_be,
 )
 
 
@@ -43,6 +45,9 @@ class PrismGymEnv(Env):
         self.coord_explore_weight = config.get("coord_explore_weight", 0.10)
         self.pokedex_seen_weight = config.get("pokedex_seen_weight", 0.25)
         self.pokedex_caught_weight = config.get("pokedex_caught_weight", 2.0)
+        self.level_weight = config.get("level_weight", 0.5)
+        self.heal_weight = config.get("heal_weight", 0.25)
+        self.death_penalty_weight = config.get("death_penalty_weight", 1.0)
         self.stuck_penalty_weight = config.get("stuck_penalty_weight", 0.05)
         self.stuck_threshold = config.get("stuck_threshold", 600)
         self.instance_id = config.get("instance_id", str(uuid.uuid4())[:8])
@@ -148,6 +153,8 @@ class PrismGymEnv(Env):
         self.stuck_penalty_count = 0
         self.last_health = self.read_hp_fraction()
         self.party_size = self.read_party_count()
+        self.max_level_sum = self.read_level_sum()
+        self.total_healing = 0.0
         self.died_count = 0
         self.step_count = 0
 
@@ -167,7 +174,7 @@ class PrismGymEnv(Env):
     def _get_obs(self):
         screen = self.render()
         self.update_recent_screens(screen)
-        level_sum = 0.02 * sum(self.read_m(a) for a in self.level_addrs)
+        level_sum = 0.02 * self.read_level_sum()
 
         pokedex_seen, pokedex_caught = self.get_pokedex_counts()
         return {
@@ -213,7 +220,7 @@ class PrismGymEnv(Env):
 
     def append_agent_stats(self, action):
         x_pos, y_pos, map_n = self.get_game_coords()
-        levels = [self.read_m(a) for a in self.level_addrs]
+        levels = self.read_party_levels()
         pokedex_seen, pokedex_caught = self.get_pokedex_counts()
         self.agent_stats.append(
             {
@@ -397,8 +404,17 @@ class PrismGymEnv(Env):
         seen = count_bits(self.read_m, self.pokedex_seen_addr, self.pokedex_bytes)
         return seen, caught
 
+    def read_party_levels(self):
+        return active_party_values(
+            self.read_m, self.level_addrs, self.read_party_count()
+        )
+
+    def read_level_sum(self):
+        return sum(self.read_party_levels())
+
     def get_game_state_reward(self):
         pokedex_seen, pokedex_caught = self.get_pokedex_counts()
+        self.max_level_sum = max(self.max_level_sum, self.read_level_sum())
         return {
             "screen": self.reward_scale
             * self.screen_explore_weight
@@ -413,6 +429,12 @@ class PrismGymEnv(Env):
             "pokedex_caught": self.reward_scale
             * self.pokedex_caught_weight
             * pokedex_caught,
+            "level": self.reward_scale * self.level_weight * self.max_level_sum,
+            "heal": self.reward_scale * self.heal_weight * self.total_healing,
+            "death": self.reward_scale
+            * self.death_penalty_weight
+            * self.died_count
+            * -1,
             "stuck": self.reward_scale
             * self.stuck_penalty_weight
             * self.stuck_penalty_count
@@ -424,17 +446,26 @@ class PrismGymEnv(Env):
         if cur_health > self.last_health and self.read_party_count() == self.party_size:
             if self.last_health <= 0:
                 self.died_count += 1
+            else:
+                self.total_healing += cur_health - self.last_health
 
     def read_hp_fraction(self):
-        if not self.hp_addrs or not self.max_hp_addrs:
+        party_count = self.read_party_count()
+        if party_count <= 0 or not self.hp_addrs or not self.max_hp_addrs:
             return 0.0
-        hp_sum = sum(self.read_hp(add) for add in self.hp_addrs)
-        max_hp_sum = sum(self.read_hp(add) for add in self.max_hp_addrs)
+        hp_values = active_party_values(
+            self.read_m, self.hp_addrs, party_count, read_u16_be
+        )
+        max_hp_values = active_party_values(
+            self.read_m, self.max_hp_addrs, party_count, read_u16_be
+        )
+        hp_sum = sum(hp_values)
+        max_hp_sum = sum(max_hp_values)
         max_hp_sum = max(max_hp_sum, 1)
         return hp_sum / max_hp_sum
 
     def read_hp(self, start):
-        return 256 * self.read_m(start) + self.read_m(start + 1)
+        return read_u16_be(self.read_m, start)
 
     def fourier_encode(self, val):
         return np.sin(val * 2 ** np.arange(self.enc_freqs))

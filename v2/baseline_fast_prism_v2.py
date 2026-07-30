@@ -61,6 +61,9 @@ if __name__ == "__main__":
         "coord_explore_weight": 0.10,
         "pokedex_seen_weight": 0.25,
         "pokedex_caught_weight": 2.0,
+        "level_weight": 0.5,
+        "heal_weight": 0.25,
+        "death_penalty_weight": 1.0,
         "stuck_penalty_weight": 0.05,
     }
 

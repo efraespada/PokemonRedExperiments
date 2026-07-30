@@ -9,7 +9,9 @@ from prism_memory import (
     PARTY_MAX_HP,
     POKEDEX_CAUGHT,
     POKEDEX_SEEN,
+    active_party_values,
     count_bits,
+    read_u16_be,
 )
 
 
@@ -27,6 +29,28 @@ class PrismMemoryTest(unittest.TestCase):
     def test_count_bits(self):
         memory = {0x1000: 0b10100001, 0x1001: 0b11110000}
         self.assertEqual(count_bits(lambda address: memory[address], 0x1000, 2), 7)
+
+    def test_read_u16_be(self):
+        memory = {0x1000: 0x12, 0x1001: 0x34}
+        self.assertEqual(read_u16_be(memory.__getitem__, 0x1000), 0x1234)
+
+    def test_active_party_values_ignores_inactive_slots(self):
+        memory = {0x1000: 5, 0x1010: 8, 0x1020: 99}
+        values = active_party_values(
+            memory.__getitem__, (0x1000, 0x1010, 0x1020), party_count=2
+        )
+        self.assertEqual(values, (5, 8))
+
+    def test_active_party_values_clamps_invalid_count(self):
+        memory = {0x1000: 5, 0x1010: 8}
+        self.assertEqual(
+            active_party_values(memory.__getitem__, (0x1000, 0x1010), 9),
+            (5, 8),
+        )
+        self.assertEqual(
+            active_party_values(memory.__getitem__, (0x1000, 0x1010), -1),
+            (),
+        )
 
 
 if __name__ == "__main__":

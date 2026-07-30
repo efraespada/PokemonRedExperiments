@@ -30,3 +30,16 @@ BATTLE_MODE = 0xD22D
 
 def count_bits(read_byte, start, length):
     return sum(int(read_byte(start + offset)).bit_count() for offset in range(length))
+
+
+def read_u16_be(read_byte, start):
+    return 256 * int(read_byte(start)) + int(read_byte(start + 1))
+
+
+def read_u8(read_byte, address):
+    return int(read_byte(address))
+
+
+def active_party_values(read_byte, addresses, party_count, read_value=read_u8):
+    active_count = max(0, min(int(party_count), len(addresses)))
+    return tuple(read_value(read_byte, address) for address in addresses[:active_count])
