@@ -27,6 +27,7 @@ def build_env_config(args, output_dir):
         "reward_scale": 1.0,
         "screen_explore_weight": 0.005,
         "coord_explore_weight": 0.50,
+        "map_explore_weight": 5.0,
         "pokedex_seen_weight": 0.25,
         "pokedex_caught_weight": 2.0,
         "level_weight": 0.5,

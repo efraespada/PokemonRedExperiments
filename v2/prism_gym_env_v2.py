@@ -43,6 +43,7 @@ class PrismGymEnv(Env):
         self.reward_scale = config.get("reward_scale", 1.0)
         self.screen_explore_weight = config.get("screen_explore_weight", 0.05)
         self.coord_explore_weight = config.get("coord_explore_weight", 0.10)
+        self.map_explore_weight = config.get("map_explore_weight", 5.0)
         self.pokedex_seen_weight = config.get("pokedex_seen_weight", 0.25)
         self.pokedex_caught_weight = config.get("pokedex_caught_weight", 2.0)
         self.level_weight = config.get("level_weight", 0.5)
@@ -146,6 +147,7 @@ class PrismGymEnv(Env):
         self.recent_screens = np.zeros(self.output_shape, dtype=np.uint8)
         self.recent_actions = np.zeros((self.frame_stacks,), dtype=np.uint8)
         self.seen_coords = {}
+        self.seen_maps = set()
         self.seen_screen_hashes = set()
         self.current_event_flags_set = {}
         self.screen_explore_count = 0
@@ -235,6 +237,7 @@ class PrismGymEnv(Env):
                 "levels_sum": sum(levels),
                 "hp": self.read_hp_fraction(),
                 "coord_count": len(self.seen_coords),
+                "map_count": len(self.seen_maps),
                 "screen_count": len(self.seen_screen_hashes),
                 "deaths": self.died_count,
                 "badge": self.get_badges(),
@@ -309,6 +312,7 @@ class PrismGymEnv(Env):
         if self.is_in_battle():
             return
         key = self.coord_key()
+        self.seen_maps.add(key[:2])
         count = self.seen_coords.get(key, 0) + 1
         self.seen_coords[key] = count
         if count == 1:
@@ -423,6 +427,9 @@ class PrismGymEnv(Env):
             "explore": self.reward_scale
             * self.coord_explore_weight
             * self.coord_explore_count,
+            "map": self.reward_scale
+            * self.map_explore_weight
+            * max(0, len(self.seen_maps) - 1),
             "badge": self.reward_scale * self.get_badges() * 5,
             "pokedex_seen": self.reward_scale
             * self.pokedex_seen_weight
