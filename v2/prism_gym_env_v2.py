@@ -14,6 +14,8 @@ from skimage.transform import downscale_local_mean
 from prism_memory import (
     BADGES,
     BATTLE_MODE,
+    ENEMY_LEVEL,
+    ENEMY_SPECIES,
     PARTY_COUNT,
     PARTY_HP,
     PARTY_LEVELS,
@@ -50,6 +52,7 @@ class PrismGymEnv(Env):
         self.level_weight = config.get("level_weight", 0.5)
         self.heal_weight = config.get("heal_weight", 0.25)
         self.death_penalty_weight = config.get("death_penalty_weight", 5.0)
+        self.opponent_weight = config.get("opponent_weight", 1.0)
         self.stuck_penalty_weight = config.get("stuck_penalty_weight", 0.05)
         self.stuck_threshold = config.get("stuck_threshold", 600)
         self.instance_id = config.get("instance_id", str(uuid.uuid4())[:8])
@@ -117,6 +120,7 @@ class PrismGymEnv(Env):
                     low=-1, high=1, shape=(self.enc_freqs,), dtype=np.float32
                 ),
                 "badges": spaces.MultiBinary(max(1, len(self.badge_addrs) * 8)),
+                "battle": spaces.MultiDiscrete([2, 101, 257]),
                 "pokedex": spaces.MultiDiscrete([257, 257]),
                 "events": spaces.MultiBinary(self.event_obs_length),
                 "map": spaces.Box(
@@ -149,6 +153,7 @@ class PrismGymEnv(Env):
         self.recent_actions = np.zeros((self.frame_stacks,), dtype=np.uint8)
         self.seen_coords = {}
         self.seen_maps = set()
+        self.seen_opponents = set()
         self.seen_screen_hashes = set()
         self.current_event_flags_set = {}
         self.screen_explore_count = 0
@@ -185,6 +190,14 @@ class PrismGymEnv(Env):
             "health": np.array([self.read_hp_fraction()], dtype=np.float32),
             "level": self.fourier_encode(level_sum).astype(np.float32),
             "badges": np.array(self.read_badges_bits(), dtype=np.int8),
+            "battle": np.array(
+                [
+                    int(self.is_in_battle()),
+                    min(100, self.read_enemy_level()),
+                    self.read_enemy_species(),
+                ],
+                dtype=np.int64,
+            ),
             "pokedex": np.array([pokedex_seen, pokedex_caught], dtype=np.int64),
             "events": np.zeros((self.event_obs_length,), dtype=np.int8),
             "map": self.get_explore_map()[:, :, None],
@@ -199,6 +212,7 @@ class PrismGymEnv(Env):
         self.update_recent_actions(action)
         self.update_screen_exploration()
         self.update_seen_coords()
+        self.update_battle_progress()
         self.update_explore_map()
         self.update_heal_reward()
         self.append_agent_stats(action)
@@ -233,6 +247,9 @@ class PrismGymEnv(Env):
                 "map": map_n,
                 "map_group": self.get_map_group(),
                 "battle": int(self.is_in_battle()),
+                "enemy_species": self.read_enemy_species(),
+                "enemy_level": self.read_enemy_level(),
+                "opponent_count": len(self.seen_opponents),
                 "last_action": int(action),
                 "pcount": self.read_party_count(),
                 "levels_sum": sum(levels),
@@ -304,6 +321,18 @@ class PrismGymEnv(Env):
         if battle_addr is None:
             return False
         return self.read_m(battle_addr) != 0
+
+    def read_enemy_species(self):
+        return self.read_m(ENEMY_SPECIES) if self.is_in_battle() else 0
+
+    def read_enemy_level(self):
+        return self.read_m(ENEMY_LEVEL) if self.is_in_battle() else 0
+
+    def update_battle_progress(self):
+        if self.is_in_battle():
+            species = self.read_enemy_species()
+            if species:
+                self.seen_opponents.add(species)
 
     def coord_key(self):
         x_pos, y_pos, map_n = self.get_game_coords()
@@ -446,6 +475,9 @@ class PrismGymEnv(Env):
             * self.death_penalty_weight
             * self.died_count
             * -1,
+            "opponent": self.reward_scale
+            * self.opponent_weight
+            * len(self.seen_opponents),
             "stuck": self.reward_scale
             * self.stuck_penalty_weight
             * self.stuck_penalty_count

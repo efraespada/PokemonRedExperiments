@@ -33,6 +33,7 @@ def build_env_config(args, output_dir):
         "level_weight": 0.5,
         "heal_weight": 0.25,
         "death_penalty_weight": 5.0,
+        "opponent_weight": 1.0,
         "stuck_penalty_weight": 0.05,
     }
 
@@ -72,6 +73,10 @@ def evaluate(env, model, episodes, seed, deterministic=True):
                 "party_count": final["pcount"],
                 "maps": len(visited_maps),
                 "battle_steps": sum(step["battle"] for step in env.agent_stats),
+                "opponents": max(step["opponent_count"] for step in env.agent_stats),
+                "max_enemy_level": max(
+                    step["enemy_level"] for step in env.agent_stats
+                ),
                 "min_health": min(step["hp"] for step in env.agent_stats),
                 "pokedex_seen": final["pokedex_seen"],
                 "pokedex_caught": final["pokedex_caught"],
@@ -92,6 +97,8 @@ def summarize(results):
         "party_count",
         "maps",
         "battle_steps",
+        "opponents",
+        "max_enemy_level",
         "min_health",
         "pokedex_seen",
         "pokedex_caught",

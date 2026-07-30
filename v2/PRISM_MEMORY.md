@@ -30,6 +30,8 @@ Estado actual del trabajo de memoria para `Prism`.
 - `0xDEDA`: medallas de Rijon
 - `0xDEDB`: otras medallas
 - `0xD22D`: modo de batalla
+- `0xD206`: especie rival; validado como `27` durante un encuentro con Shinx
+- `0xD213`: nivel rival; validado como `2` en ese mismo encuentro
 - todas estas direcciones `0xDxxx` pertenecen a WRAM banco 1; deben leerse
   explícitamente como `memory[1, address]` porque Prism cambia `SVBK` durante
   combates y transiciones
