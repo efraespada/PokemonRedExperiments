@@ -216,6 +216,10 @@ LARVITAR_APPROACH = (
     + repeated("left", 1)
 )
 
+LARVITAR_LONG_ROUTE_MOVES = 20
+PRESETS["larvitar_long_route_adam"] = (
+    LARVITAR_APPROACH[:-LARVITAR_LONG_ROUTE_MOVES] + [("wait", 240)]
+)
 LARVITAR_ROUTE_MOVES = 10
 PRESETS["larvitar_route_adam"] = (
     LARVITAR_APPROACH[:-LARVITAR_ROUTE_MOVES] + [("wait", 240)]

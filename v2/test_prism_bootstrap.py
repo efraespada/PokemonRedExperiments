@@ -1,6 +1,11 @@
 import unittest
 
-from prism_bootstrap import LARVITAR_NEARBY_MOVES, LARVITAR_ROUTE_MOVES, PRESETS
+from prism_bootstrap import (
+    LARVITAR_LONG_ROUTE_MOVES,
+    LARVITAR_NEARBY_MOVES,
+    LARVITAR_ROUTE_MOVES,
+    PRESETS,
+)
 
 
 class PrismBootstrapTest(unittest.TestCase):
@@ -33,6 +38,17 @@ class PrismBootstrapTest(unittest.TestCase):
         self.assertEqual(
             route[:-1],
             offer[: -(LARVITAR_ROUTE_MOVES + 1)],
+        )
+
+    def test_larvitar_long_route_preset_stops_twenty_moves_before_offer(self):
+        route = PRESETS["larvitar_long_route_adam"]
+        offer = PRESETS["larvitar_offer_adam"]
+
+        self.assertEqual(LARVITAR_LONG_ROUTE_MOVES, 20)
+        self.assertEqual(route[-1], ("wait", 240))
+        self.assertEqual(
+            route[:-1],
+            offer[: -(LARVITAR_LONG_ROUTE_MOVES + 1)],
         )
 
 
