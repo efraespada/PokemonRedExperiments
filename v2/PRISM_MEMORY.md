@@ -14,6 +14,13 @@ Estado actual del trabajo de memoria para `Prism`.
 - `0xD361`: candidato fuerte para `y`
 - `0xD362`: candidato fuerte para `x`
 - `0xD356`: byte interesante cerca del bloque de coordenadas; pendiente de validar como badge/event/status
+- `0xDCB5-0xDCB8`: candidatos fuertes estilo Gen2 para `mapGroup`, `mapNumber`, `y`, `x`
+
+Nuevo checkpoint útil:
+
+- `map_ready_adam.state`: estado ya en overworld
+- desde ese state se observa `0xDCB5=1`, `0xDCB6=1`, `0xDCB7=6`, `0xDCB8=10`
+- esto refuerza que Prism usa layout de memoria tipo Crystal/PolishedCrystal para coordenadas
 
 Primer diff útil:
 
@@ -69,6 +76,7 @@ Checkpoints útiles ya verificados:
 - `intro_text`: confirmación `¿Es correcto?`
 - `name_selection`: lista de nombres prefijados
 - `name_adam`: intro ya continuada con el nombre `Adam`
+- `map_ready_adam`: primer estado confirmado en overworld tras elegir `Adam`
 
 ## Siguiente objetivo
 

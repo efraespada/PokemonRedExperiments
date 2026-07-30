@@ -33,7 +33,13 @@ class PrismGymEnv(Env):
         self.instance_id = config.get("instance_id", str(uuid.uuid4())[:8])
         self.coord_addrs = config.get(
             "coord_addrs",
-            {"x": 0xD362, "y": 0xD361, "map": 0xD35E, "battle": 0xD057},
+            {
+                "x": 0xDCB8,
+                "y": 0xDCB7,
+                "map": 0xDCB6,
+                "map_group": 0xDCB5,
+                "battle": 0xD057,
+            },
         )
         self.level_addrs = config.get("level_addrs", [])
         self.hp_addrs = config.get("hp_addrs", [])
@@ -193,6 +199,7 @@ class PrismGymEnv(Env):
                 "x": x_pos,
                 "y": y_pos,
                 "map": map_n,
+                "map_group": self.get_map_group(),
                 "last_action": int(action),
                 "pcount": self.read_party_count(),
                 "levels_sum": sum(levels),
@@ -252,6 +259,10 @@ class PrismGymEnv(Env):
             self.read_m(self.coord_addrs["map"]),
         )
 
+    def get_map_group(self):
+        addr = self.coord_addrs.get("map_group")
+        return self.read_m(addr) if addr is not None else 0
+
     def is_in_battle(self):
         battle_addr = self.coord_addrs.get("battle")
         if battle_addr is None:
@@ -260,7 +271,7 @@ class PrismGymEnv(Env):
 
     def coord_key(self):
         x_pos, y_pos, map_n = self.get_game_coords()
-        return (int(map_n), int(x_pos), int(y_pos))
+        return (int(self.get_map_group()), int(map_n), int(x_pos), int(y_pos))
 
     def update_seen_coords(self):
         if self.is_in_battle():
@@ -281,9 +292,9 @@ class PrismGymEnv(Env):
 
     def render_local_explore_map(self):
         out = np.zeros((self.coords_pad * 2, self.coords_pad * 2), dtype=np.uint8)
-        map_n, x_pos, y_pos = self.coord_key()
-        for (coord_map, coord_x, coord_y), count in self.seen_coords.items():
-            if coord_map != map_n:
+        map_group, map_n, x_pos, y_pos = self.coord_key()
+        for (coord_group, coord_map, coord_x, coord_y), count in self.seen_coords.items():
+            if coord_group != map_group or coord_map != map_n:
                 continue
             dx = coord_x - x_pos + self.coords_pad
             dy = coord_y - y_pos + self.coords_pad
