@@ -67,7 +67,9 @@ if __name__ == "__main__":
         "pokedex_caught_weight": 2.0,
         "level_weight": 0.5,
         "heal_weight": 0.25,
-        "death_penalty_weight": 1.0,
+        "death_penalty_weight": float(
+            os.getenv("PRISM_DEATH_PENALTY_WEIGHT", "5.0")
+        ),
         "stuck_penalty_weight": 0.05,
     }
 

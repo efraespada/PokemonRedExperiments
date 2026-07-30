@@ -31,7 +31,7 @@ def build_env_config(args, output_dir):
         "pokedex_caught_weight": 2.0,
         "level_weight": 0.5,
         "heal_weight": 0.25,
-        "death_penalty_weight": 1.0,
+        "death_penalty_weight": 5.0,
         "stuck_penalty_weight": 0.05,
     }
 
@@ -40,7 +40,10 @@ def evaluate(env, model, episodes, seed, deterministic=True):
     rng = np.random.default_rng(seed)
     results = []
     for episode in range(episodes):
-        obs, _ = env.reset(seed=seed + episode)
+        episode_seed = seed + episode
+        obs, _ = env.reset(seed=episode_seed)
+        if model is not None:
+            model.set_random_seed(episode_seed)
         total_reward = 0.0
         terminated = truncated = False
         while not (terminated or truncated):
