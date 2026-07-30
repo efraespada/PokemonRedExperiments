@@ -16,6 +16,24 @@ Estado actual del trabajo de memoria para `Prism`.
 - `0xD356`: byte interesante cerca del bloque de coordenadas; pendiente de validar como badge/event/status
 - `0xDCB5-0xDCB8`: candidatos fuertes estilo Gen2 para `mapGroup`, `mapNumber`, `y`, `x`
 
+## Layout confirmado desde el código fuente de Prism
+
+- `0xDCD7`: número de Pokémon en el equipo
+- `0xDCDF`: inicio de la primera estructura de Pokémon; cada estructura ocupa
+  `0x30` bytes
+- niveles: `0xDCFE`, `0xDD2E`, `0xDD5E`, `0xDD8E`, `0xDDBE`, `0xDDEE`
+- HP actual: `0xDD01`, `0xDD31`, `0xDD61`, `0xDD91`, `0xDDC1`, `0xDDF1`
+- HP máximo: `0xDD03`, `0xDD33`, `0xDD63`, `0xDD93`, `0xDDC3`, `0xDDF3`
+- `0xDE99-0xDEB8`: Pokédex capturados
+- `0xDEB9-0xDED8`: Pokédex vistos
+- `0xDED9`: medallas de Naljo
+- `0xDEDA`: medallas de Rijon
+- `0xDEDB`: otras medallas
+
+Estas direcciones están centralizadas en `prism_memory.py`. El entorno expone
+los contadores de Pokédex en la observación y en TensorBoard, y los incorpora a
+la recompensa de progreso.
+
 Nuevo checkpoint útil:
 
 - `map_ready_adam.state`: estado ya en overworld

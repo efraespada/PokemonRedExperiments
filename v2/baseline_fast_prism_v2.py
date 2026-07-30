@@ -59,8 +59,9 @@ if __name__ == "__main__":
         "reward_scale": 1.0,
         "screen_explore_weight": 0.05,
         "coord_explore_weight": 0.10,
+        "pokedex_seen_weight": 0.25,
+        "pokedex_caught_weight": 2.0,
         "stuck_penalty_weight": 0.05,
-        "party_count_addr": 0xDCD7,
     }
 
     print(env_config)

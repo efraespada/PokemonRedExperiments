@@ -11,6 +11,18 @@ from pyboy import PyBoy
 from pyboy.utils import WindowEvent
 from skimage.transform import downscale_local_mean
 
+from prism_memory import (
+    BADGES,
+    PARTY_COUNT,
+    PARTY_HP,
+    PARTY_LEVELS,
+    PARTY_MAX_HP,
+    POKEDEX_BYTES,
+    POKEDEX_CAUGHT,
+    POKEDEX_SEEN,
+    count_bits,
+)
+
 
 class PrismGymEnv(Env):
     def __init__(self, config=None):
@@ -28,6 +40,8 @@ class PrismGymEnv(Env):
         self.reward_scale = config.get("reward_scale", 1.0)
         self.screen_explore_weight = config.get("screen_explore_weight", 0.05)
         self.coord_explore_weight = config.get("coord_explore_weight", 0.10)
+        self.pokedex_seen_weight = config.get("pokedex_seen_weight", 0.25)
+        self.pokedex_caught_weight = config.get("pokedex_caught_weight", 2.0)
         self.stuck_penalty_weight = config.get("stuck_penalty_weight", 0.05)
         self.stuck_threshold = config.get("stuck_threshold", 600)
         self.instance_id = config.get("instance_id", str(uuid.uuid4())[:8])
@@ -41,11 +55,14 @@ class PrismGymEnv(Env):
                 "battle": 0xD057,
             },
         )
-        self.level_addrs = config.get("level_addrs", [])
-        self.hp_addrs = config.get("hp_addrs", [])
-        self.max_hp_addrs = config.get("max_hp_addrs", [])
-        self.badge_addrs = config.get("badge_addrs", [])
-        self.party_count_addr = config.get("party_count_addr")
+        self.level_addrs = config.get("level_addrs", PARTY_LEVELS)
+        self.hp_addrs = config.get("hp_addrs", PARTY_HP)
+        self.max_hp_addrs = config.get("max_hp_addrs", PARTY_MAX_HP)
+        self.badge_addrs = config.get("badge_addrs", BADGES)
+        self.party_count_addr = config.get("party_count_addr", PARTY_COUNT)
+        self.pokedex_caught_addr = config.get("pokedex_caught_addr", POKEDEX_CAUGHT)
+        self.pokedex_seen_addr = config.get("pokedex_seen_addr", POKEDEX_SEEN)
+        self.pokedex_bytes = config.get("pokedex_bytes", POKEDEX_BYTES)
         self.event_obs_length = config.get("event_obs_length", 8)
 
         self.s_path.mkdir(exist_ok=True)
@@ -92,6 +109,7 @@ class PrismGymEnv(Env):
                     low=-1, high=1, shape=(self.enc_freqs,), dtype=np.float32
                 ),
                 "badges": spaces.MultiBinary(max(1, len(self.badge_addrs) * 8)),
+                "pokedex": spaces.MultiDiscrete([257, 257]),
                 "events": spaces.MultiBinary(self.event_obs_length),
                 "map": spaces.Box(
                     low=0,
@@ -150,11 +168,13 @@ class PrismGymEnv(Env):
         self.update_recent_screens(screen)
         level_sum = 0.02 * sum(self.read_m(a) for a in self.level_addrs)
 
+        pokedex_seen, pokedex_caught = self.get_pokedex_counts()
         return {
             "screens": self.recent_screens,
             "health": np.array([self.read_hp_fraction()], dtype=np.float32),
             "level": self.fourier_encode(level_sum).astype(np.float32),
             "badges": np.array(self.read_badges_bits(), dtype=np.int8),
+            "pokedex": np.array([pokedex_seen, pokedex_caught], dtype=np.int64),
             "events": np.zeros((self.event_obs_length,), dtype=np.int8),
             "map": self.get_explore_map()[:, :, None],
             "recent_actions": self.recent_actions,
@@ -193,6 +213,7 @@ class PrismGymEnv(Env):
     def append_agent_stats(self, action):
         x_pos, y_pos, map_n = self.get_game_coords()
         levels = [self.read_m(a) for a in self.level_addrs]
+        pokedex_seen, pokedex_caught = self.get_pokedex_counts()
         self.agent_stats.append(
             {
                 "step": self.step_count,
@@ -208,6 +229,8 @@ class PrismGymEnv(Env):
                 "screen_count": len(self.seen_screen_hashes),
                 "deaths": self.died_count,
                 "badge": self.get_badges(),
+                "pokedex_seen": pokedex_seen,
+                "pokedex_caught": pokedex_caught,
                 "stuck": self.stuck_penalty_count,
             }
         )
@@ -368,7 +391,13 @@ class PrismGymEnv(Env):
             return 0
         return self.read_m(self.party_count_addr)
 
+    def get_pokedex_counts(self):
+        caught = count_bits(self.read_m, self.pokedex_caught_addr, self.pokedex_bytes)
+        seen = count_bits(self.read_m, self.pokedex_seen_addr, self.pokedex_bytes)
+        return seen, caught
+
     def get_game_state_reward(self):
+        pokedex_seen, pokedex_caught = self.get_pokedex_counts()
         return {
             "screen": self.reward_scale
             * self.screen_explore_weight
@@ -377,6 +406,12 @@ class PrismGymEnv(Env):
             * self.coord_explore_weight
             * self.coord_explore_count,
             "badge": self.reward_scale * self.get_badges() * 5,
+            "pokedex_seen": self.reward_scale
+            * self.pokedex_seen_weight
+            * pokedex_seen,
+            "pokedex_caught": self.reward_scale
+            * self.pokedex_caught_weight
+            * pokedex_caught,
             "stuck": self.reward_scale
             * self.stuck_penalty_weight
             * self.stuck_penalty_count
