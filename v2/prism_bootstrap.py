@@ -186,7 +186,7 @@ ACQUA_LARVITAR_PATH = (
     "up",
 )
 
-PRESETS["larvitar_ready_adam"] = (
+LARVITAR_APPROACH = (
     PRESETS["map_ready_adam"]
     + repeated("down", 3)
     + repeated("left", 5)
@@ -214,6 +214,15 @@ PRESETS["larvitar_ready_adam"] = (
     + [("wait", 1200)]
     + [(action, 24) for action in ACQUA_LARVITAR_PATH for _ in range(2)]
     + repeated("left", 1)
+)
+
+PRESETS["larvitar_offer_adam"] = LARVITAR_APPROACH + [("wait", 240)]
+PRESETS["larvitar_accept_adam"] = (
+    PRESETS["larvitar_offer_adam"] + repeated("a", 12, 180)
+)
+
+PRESETS["larvitar_ready_adam"] = (
+    LARVITAR_APPROACH
     + repeated("a", 35, 180)
 )
 
@@ -235,11 +244,16 @@ def run_step(pyboy, action, ticks):
 
 
 def snapshot(pyboy):
+    def read_byte(address):
+        if 0xD000 <= address < 0xE000:
+            return pyboy.memory[1, address]
+        return pyboy.memory[address]
+
     pokedex_caught = count_bits(
-        pyboy.memory.__getitem__, POKEDEX_CAUGHT, POKEDEX_BYTES
+        read_byte, POKEDEX_CAUGHT, POKEDEX_BYTES
     )
     pokedex_seen = count_bits(
-        pyboy.memory.__getitem__, POKEDEX_SEEN, POKEDEX_BYTES
+        read_byte, POKEDEX_SEEN, POKEDEX_BYTES
     )
     return {
         "d35d": int(pyboy.memory[0xD35D]),
@@ -254,19 +268,19 @@ def snapshot(pyboy):
         "dcd7": int(pyboy.memory[0xDCD7]),
         "dcd8": int(pyboy.memory[0xDCD8]),
         "dcd9": int(pyboy.memory[0xDCD9]),
-        "party_count": int(pyboy.memory[PARTY_COUNT]),
-        "party_levels": [int(pyboy.memory[address]) for address in PARTY_LEVELS],
+        "party_count": int(read_byte(PARTY_COUNT)),
+        "party_levels": [int(read_byte(address)) for address in PARTY_LEVELS],
         "party_hp": [
-            256 * int(pyboy.memory[address]) + int(pyboy.memory[address + 1])
+            256 * int(read_byte(address)) + int(read_byte(address + 1))
             for address in PARTY_HP
         ],
         "party_max_hp": [
-            256 * int(pyboy.memory[address]) + int(pyboy.memory[address + 1])
+            256 * int(read_byte(address)) + int(read_byte(address + 1))
             for address in PARTY_MAX_HP
         ],
         "pokedex_seen": pokedex_seen,
         "pokedex_caught": pokedex_caught,
-        "badges": [int(pyboy.memory[address]) for address in BADGES],
+        "badges": [int(read_byte(address)) for address in BADGES],
     }
 
 

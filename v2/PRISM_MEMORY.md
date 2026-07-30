@@ -146,6 +146,10 @@ Checkpoints útiles ya verificados:
   tras elegir `Adam`
 - `larvitar_ready_adam`: estado en `AcquaStart` tras aceptar al primer Larvitar
   y cerrar su diálogo
+- `larvitar_offer_adam`: estado junto al primer Larvitar, justo antes de iniciar
+  su diálogo; útil para un microcurrículo de interacción
+- `larvitar_accept_adam`: estado una confirmación antes de que Larvitar entre en
+  el equipo; una pulsación A completa la microtarea de adquisición
 
 Validación dinámica en `larvitar_ready_adam`:
 
