@@ -89,7 +89,9 @@ can use `PRISM_VEC_ENV=dummy PRISM_NUM_CPU=1`; normal training uses the faster
 `PRISM_N_STEPS` explicitly (for example, `256`) so PPO does not learn from tiny
 rollout batches. The Prism defaults prioritize coordinate exploration over
 screen changes, use four PPO optimization epochs, and can be tuned with the
-`PRISM_*` environment variables in `baseline_fast_prism_v2.py`.
+`PRISM_*` environment variables in `baseline_fast_prism_v2.py`. Resumed models
+reapply those optimizer settings, and `PRISM_CHECKPOINT_FREQ` controls how often
+intermediate policies are preserved for evaluation.
 
 Evaluate a checkpoint deterministically and compare it with a seeded random
 baseline:

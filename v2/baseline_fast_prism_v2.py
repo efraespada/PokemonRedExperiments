@@ -90,11 +90,6 @@ if __name__ == "__main__":
             f"Unsupported PRISM_VEC_ENV={vec_env!r}; expected 'subproc' or 'dummy'"
         )
 
-    checkpoint_callback = CheckpointCallback(
-        save_freq=ep_length // 2, save_path=sess_path, name_prefix="prism"
-    )
-    callbacks = [checkpoint_callback, TensorboardCallback(sess_path)]
-
     if sys.stdin.isatty():
         file_name = ""
     else:
@@ -111,12 +106,24 @@ if __name__ == "__main__":
     learning_rate = float(os.getenv("PRISM_LEARNING_RATE", 0.0003))
     ent_coef = float(os.getenv("PRISM_ENT_COEF", 0.01))
     seed = int(os.getenv("PRISM_SEED", 0))
+    checkpoint_freq = int(
+        os.getenv("PRISM_CHECKPOINT_FREQ", max(1, ep_length // 4))
+    )
+    checkpoint_callback = CheckpointCallback(
+        save_freq=checkpoint_freq, save_path=sess_path, name_prefix="prism"
+    )
+    callbacks = [checkpoint_callback, TensorboardCallback(sess_path)]
 
     if exists(file_name + ".zip"):
         print("\nloading checkpoint")
         model = PPO.load(file_name, env=env)
         model.n_steps = train_steps_batch
         model.n_envs = num_cpu
+        model.batch_size = batch_size
+        model.n_epochs = n_epochs
+        model.ent_coef = ent_coef
+        model.learning_rate = learning_rate
+        model._setup_lr_schedule()
         model.rollout_buffer.buffer_size = train_steps_batch
         model.rollout_buffer.n_envs = num_cpu
         model.rollout_buffer.reset()
