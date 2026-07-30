@@ -87,6 +87,15 @@ and `PRISM_INIT_STATE`. Restricted environments that cannot create subprocesses
 can use `PRISM_VEC_ENV=dummy PRISM_NUM_CPU=1`; normal training uses the faster
 `subproc` vector environment by default.
 
+Evaluate a checkpoint deterministically and compare it with a seeded random
+baseline:
+```bash
+python prism_evaluate.py --checkpoint runs_prism/prism_4096_steps.zip
+python prism_evaluate.py --seed 0
+```
+Both commands write machine-readable episode metrics to
+`prism_evaluation.json`; use `--output` to preserve multiple reports.
+
 Notes:
 - `prism_init.state` is intentionally not committed because it is generated from your ROM.
 - Bootstrap states are also local, generated assets and are not committed.
