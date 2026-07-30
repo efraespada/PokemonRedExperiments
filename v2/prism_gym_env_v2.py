@@ -229,6 +229,7 @@ class PrismGymEnv(Env):
                 "y": y_pos,
                 "map": map_n,
                 "map_group": self.get_map_group(),
+                "battle": int(self.is_in_battle()),
                 "last_action": int(action),
                 "pcount": self.read_party_count(),
                 "levels_sum": sum(levels),

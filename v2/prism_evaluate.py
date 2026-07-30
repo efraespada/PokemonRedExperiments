@@ -56,6 +56,9 @@ def evaluate(env, model, episodes, seed, deterministic=True):
             total_reward += float(reward)
 
         final = env.agent_stats[-1]
+        visited_maps = {
+            (step["map_group"], step["map"]) for step in env.agent_stats
+        }
         results.append(
             {
                 "episode": episode,
@@ -64,7 +67,11 @@ def evaluate(env, model, episodes, seed, deterministic=True):
                 "coordinates": final["coord_count"],
                 "screens": final["screen_count"],
                 "level_sum": final["levels_sum"],
+                "max_level_sum": max(step["levels_sum"] for step in env.agent_stats),
                 "party_count": final["pcount"],
+                "maps": len(visited_maps),
+                "battle_steps": sum(step["battle"] for step in env.agent_stats),
+                "min_health": min(step["hp"] for step in env.agent_stats),
                 "pokedex_seen": final["pokedex_seen"],
                 "pokedex_caught": final["pokedex_caught"],
                 "badges": final["badge"],
@@ -80,7 +87,11 @@ def summarize(results):
         "coordinates",
         "screens",
         "level_sum",
+        "max_level_sum",
         "party_count",
+        "maps",
+        "battle_steps",
+        "min_health",
         "pokedex_seen",
         "pokedex_caught",
         "badges",
