@@ -41,6 +41,7 @@ from prism_memory import (
     PRISM_WRAM_BANK,
     active_party_values,
     classify_battle_outcome,
+    earned_experience_delta,
     is_productive_interaction,
     read_u16_be,
     read_u24_be,
@@ -212,8 +213,9 @@ class PrismGymEnv(Env):
         self.last_health = self.read_hp_fraction()
         self.party_size = self.read_party_count()
         self.max_level_sum = self.read_level_sum()
-        self.initial_experience = self.read_experience_sum()
-        self.max_experience = self.initial_experience
+        self.last_party_species = self.read_party_species()
+        self.last_party_experience = self.read_party_experience()
+        self.total_experience_gained = 0
         self.total_healing = 0.0
         self.total_damage = 0.0
         self.last_enemy_health = self.read_enemy_hp_fraction()
@@ -696,14 +698,25 @@ class PrismGymEnv(Env):
         return sum(self.read_party_levels())
 
     def read_experience_sum(self):
-        values = active_party_values(
+        return sum(self.read_party_experience())
+
+    def read_party_experience(self):
+        return active_party_values(
             self.read_m, PARTY_EXP, self.read_party_count(), read_u24_be
         )
-        return sum(values)
 
     def get_experience_gained(self):
-        self.max_experience = max(self.max_experience, self.read_experience_sum())
-        return max(0, self.max_experience - self.initial_experience)
+        current_species = self.read_party_species()
+        current_experience = self.read_party_experience()
+        self.total_experience_gained += earned_experience_delta(
+            self.last_party_species,
+            self.last_party_experience,
+            current_species,
+            current_experience,
+        )
+        self.last_party_species = current_species
+        self.last_party_experience = current_experience
+        return self.total_experience_gained
 
     def get_game_state_reward(self):
         pokedex_seen, pokedex_caught = self.get_pokedex_progress()

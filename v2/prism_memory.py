@@ -63,6 +63,21 @@ def classify_battle_outcome(initial_experience, final_experience, party_hp_fract
     return "other"
 
 
+def earned_experience_delta(
+    previous_species, previous_experience, current_species, current_experience
+):
+    return sum(
+        max(0, int(current_exp) - int(previous_exp))
+        for previous_mon, previous_exp, current_mon, current_exp in zip(
+            previous_species,
+            previous_experience,
+            current_species,
+            current_experience,
+        )
+        if int(previous_mon) == int(current_mon)
+    )
+
+
 def read_item_pocket(read_byte, count_address, items_address, capacity, quantities=True):
     count = max(0, min(int(read_byte(count_address)), int(capacity)))
     stride = 2 if quantities else 1

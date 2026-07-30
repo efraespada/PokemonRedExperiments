@@ -174,6 +174,9 @@ invalidados por la captura banked.
 
 La experiencia ganada se usa como señal de victoria verificable: encontrar una
 especie nueva modifica Pokédex, pero solo derrotar a un rival incrementa EXP.
+La métrica de experiencia exige además que la especie permanezca en el mismo
+slot; la EXP inicial de un Pokémon recién incorporado no se confunde con
+entrenamiento.
 El entorno registra por separado inicios de encuentro y salidas por victoria,
 derrota o salida no decisiva. Una victoria requiere aumento de EXP durante el
 combate; una derrota requiere que el HP total del equipo llegue a cero.

@@ -30,6 +30,7 @@ from prism_memory import (
     active_party_values,
     classify_battle_outcome,
     count_bits,
+    earned_experience_delta,
     is_productive_interaction,
     monotonic_progress,
     read_u16_be,
@@ -103,6 +104,22 @@ class PrismMemoryTest(unittest.TestCase):
 
     def test_classify_battle_outcome_keeps_non_decisive_exit_separate(self):
         self.assertEqual(classify_battle_outcome(100, 100, 0.5), "other")
+
+    def test_experience_delta_ignores_new_party_members(self):
+        self.assertEqual(
+            earned_experience_delta((), (), (27,), (156,)),
+            0,
+        )
+
+    def test_experience_delta_counts_growth_for_same_slot_species(self):
+        self.assertEqual(
+            earned_experience_delta((27, 4), (156, 20), (27, 4), (170, 25)),
+            19,
+        )
+        self.assertEqual(
+            earned_experience_delta((27,), (170,), (27,), (160,)),
+            0,
+        )
 
     def test_read_item_pocket_returns_item_quantity_pairs(self):
         memory = {0x1000: 2, 0x1001: 7, 0x1002: 3, 0x1003: 9, 0x1004: 12}
