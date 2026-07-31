@@ -96,6 +96,9 @@ Each run also writes `training_manifest.json` in its session directory with the
 seed, hyperparameters, curriculum states, requested steps, duration, completion
 status, resume source, and generated checkpoints.
 
+For sequential training, evaluation, and automatic `ACCEPT`/`DISCARD` gating,
+see [`v2/PRISM_EXPERIMENT_PIPELINE.md`](v2/PRISM_EXPERIMENT_PIPELINE.md).
+
 For a focused interaction curriculum, generate `larvitar_offer_adam`; it stops
 beside the first Larvitar immediately before its dialogue. The existing
 `larvitar_ready_adam` preset continues through that dialogue and starts with
