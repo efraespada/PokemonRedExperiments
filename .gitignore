@@ -27,3 +27,4 @@ v2/bootstrap_states/
 runs_prism_smoke/
 tmp_prism_*/
 tmp_*/
+.repowise/
